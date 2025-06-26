@@ -14,69 +14,49 @@ type BaseModel struct {
 	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index"`
 }
 
-// User model
-type User struct {
+// GST Registration model for storing GST registration data
+type GSTRegistration struct {
 	BaseModel
-	Name     string `json:"name" gorm:"not null" validate:"required,min=2,max=100"`
-	Email    string `json:"email" gorm:"uniqueIndex;not null" validate:"required,email"`
-	Password string `json:"-" gorm:"not null" validate:"required,min=6"`
-	Role     string `json:"role" gorm:"default:user" validate:"oneof=admin user"`
-	IsActive bool   `json:"is_active" gorm:"default:true"`
+	ClientID              string `json:"client_id" gorm:"not null" validate:"required"`
+	RegistrationID        string `json:"registration_id" gorm:"uniqueIndex;not null" validate:"required"`
+	GSTRegistrationNumber string `json:"gst_registration_number" gorm:"index"`
+	Name                  string `json:"name" gorm:"type:text"`
+	RegisteredFrom        string `json:"registered_from"`
+	RegisteredTo          string `json:"registered_to"`
+	Status                string `json:"status"`
+	Remarks               string `json:"remarks" gorm:"type:text"`
 }
 
-// Product model (contoh untuk demo)
-type Product struct {
-	BaseModel
-	Name        string  `json:"name" gorm:"not null" validate:"required,min=2,max=100"`
-	Description string  `json:"description" gorm:"type:text"`
-	Price       float64 `json:"price" gorm:"not null" validate:"required,min=0"`
-	Stock       int     `json:"stock" gorm:"not null;default:0" validate:"min=0"`
-	CategoryID  uint    `json:"category_id" gorm:"not null"`
-	Category    Category `json:"category" gorm:"foreignKey:CategoryID"`
-	UserID      uint    `json:"user_id" gorm:"not null"`
-	User        User    `json:"user" gorm:"foreignKey:UserID"`
+// GST Response models based on IRAS API spec
+type GSTResponse struct {
+	ReturnCode int      `json:"returnCode"`
+	Data       *GSTData `json:"data,omitempty"`
+	Info       *GSTInfo `json:"info,omitempty"`
 }
 
-// Category model
-type Category struct {
-	BaseModel
-	Name        string    `json:"name" gorm:"uniqueIndex;not null" validate:"required,min=2,max=50"`
-	Description string    `json:"description" gorm:"type:text"`
-	Products    []Product `json:"products,omitempty" gorm:"foreignKey:CategoryID"`
+type GSTData struct {
+	Name                  string `json:"name"`
+	GSTRegistrationNumber string `json:"gstRegistrationNumber"`
+	RegistrationID        string `json:"registrationId"`
+	RegisteredFrom        string `json:"RegisteredFrom"`
+	RegisteredTo          string `json:"RegisteredTo"`
+	Remarks               string `json:"Remarks"`
+	Status                string `json:"Status"`
 }
 
-// Response models
-type APIResponse struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   string      `json:"error,omitempty"`
+type GSTInfo struct {
+	Message       string          `json:"message"`
+	MessageCode   int             `json:"messageCode"`
+	FieldInfoList []GSTFieldError `json:"fieldInfoList,omitempty"`
 }
 
-type PaginationResponse struct {
-	Data       interface{} `json:"data"`
-	Total      int64       `json:"total"`
-	Page       int         `json:"page"`
-	Limit      int         `json:"limit"`
-	TotalPages int         `json:"total_pages"`
+type GSTFieldError struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
 }
 
-// Request models
-type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=6"`
-}
-
-type RegisterRequest struct {
-	Name     string `json:"name" validate:"required,min=2,max=100"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=6"`
-}
-
-type CreateProductRequest struct {
-	Name        string  `json:"name" validate:"required,min=2,max=100"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price" validate:"required,min=0"`
-	Stock       int     `json:"stock" validate:"min=0"`
-	CategoryID  uint    `json:"category_id" validate:"required"`
+// GST Request models based on IRAS API spec
+type GSTRequest struct {
+	ClientID string `json:"clientID" validate:"required"`
+	RegID    string `json:"regID" validate:"required"`
 }

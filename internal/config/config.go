@@ -12,10 +12,10 @@ import (
 )
 
 type Config struct {
-	DB       *gorm.DB
-	Port     string
+	DB        *gorm.DB
+	Port      string
 	JWTSecret string
-	Env      string
+	Env       string
 }
 
 var AppConfig *Config
@@ -27,9 +27,9 @@ func InitConfig() {
 	}
 
 	config := &Config{
-		Port:     getEnv("PORT", "8080"),
+		Port:      getEnv("PORT", "8080"),
 		JWTSecret: getEnv("JWT_SECRET", "default-secret-key"),
-		Env:      getEnv("ENV", "development"),
+		Env:       getEnv("ENV", "development"),
 	}
 
 	// Initialize database

@@ -29,7 +29,7 @@ func main() {
 	// Start server
 	log.Printf("Server starting on port %s", config.AppConfig.Port)
 	log.Printf("Environment: %s", config.AppConfig.Env)
-	
+
 	if err := router.Run(":" + config.AppConfig.Port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
@@ -37,14 +37,14 @@ func main() {
 
 func autoMigrate() error {
 	db := config.AppConfig.DB
-	
+
 	// Auto-migrate all models
 	err := db.AutoMigrate(
 		&models.User{},
 		&models.Category{},
 		&models.Product{},
 	)
-	
+
 	if err != nil {
 		return err
 	}
