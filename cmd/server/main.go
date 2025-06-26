@@ -38,11 +38,9 @@ func main() {
 func autoMigrate() error {
 	db := config.AppConfig.DB
 
-	// Auto-migrate all models
+	// Auto-migrate GST Registration model
 	err := db.AutoMigrate(
-		&models.User{},
-		&models.Category{},
-		&models.Product{},
+		&models.GSTRegistration{},
 	)
 
 	if err != nil {
