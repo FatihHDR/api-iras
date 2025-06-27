@@ -55,7 +55,7 @@ func (s *AuthService) Register(req *models.RegisterRequest) (*models.User, error
 // Login authenticates user and returns user info
 func (s *AuthService) Login(req *models.LoginRequest) (*models.User, error) {
 	var user models.User
-	
+
 	// Find user by username or email
 	err := s.db.Where("username = ? OR email = ?", req.Username, req.Username).First(&user).Error
 	if err != nil {

@@ -190,7 +190,7 @@ func (ctrl *AuthController) UpdateProfile(c *gin.Context) {
 	}
 
 	// Remove sensitive fields that shouldn't be updated via this endpoint
-	delete(updates, "role")     // Role should be updated by admin only
+	delete(updates, "role")      // Role should be updated by admin only
 	delete(updates, "is_active") // Should be updated via separate endpoint
 
 	// Update user
