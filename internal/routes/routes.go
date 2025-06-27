@@ -43,6 +43,19 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		irasGroup.POST("/SearchGSTRegistered", gstController.SearchGSTRegistered)
 	}
 
+	// Authentication routes (public)
+	authGroup := router.Group("/auth")
+	{
+		authGroup.POST("/register", authController.Register)
+		authGroup.POST("/login", authController.Login)
+		authGroup.GET("/demo-token", authController.GenerateDemoToken) // Development only
+		
+		// Protected auth routes
+		authGroup.Use(middleware.AuthRequired())
+		authGroup.GET("/profile", authController.GetProfile)
+		authGroup.PUT("/profile", authController.UpdateProfile)
+	}
+
 	// Admin routes for managing GST registrations (protected with auth)
 	adminGroup := router.Group("/admin")
 	adminGroup.Use(middleware.AuthRequired()) // Add authentication middleware
@@ -53,6 +66,10 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		adminGroup.GET("/gst-registrations/:id", gstController.GetGSTRegistration)
 		adminGroup.PUT("/gst-registrations/:id", gstController.UpdateGSTRegistration)
 		adminGroup.DELETE("/gst-registrations/:id", gstController.DeleteGSTRegistration)
+		
+		// User management endpoints (admin only)
+		adminGroup.GET("/users", authController.GetAllUsers)
+		adminGroup.PUT("/users/:id/deactivate", authController.DeactivateUser)
 	}
 
 	// API info endpoint
