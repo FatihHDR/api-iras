@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"api-iras/internal/config"
+	"api-iras/pkg/utils"
 	"fmt"
 	"net/http"
 	"strings"
@@ -130,7 +132,7 @@ func ValidateJSON(obj interface{}) gin.HandlerFunc {
 	}
 }
 
-// Simple Auth middleware (JWT dapat ditambahkan nanti)
+// JWT Auth middleware
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -143,7 +145,6 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
-		// Simple token validation (replace with JWT validation in production)
 		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
 		if tokenString == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -154,9 +155,33 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
-		// TODO: Add JWT token validation here
-		// For now, we'll just check if token exists
-		c.Set("user", "authenticated_user")
+		// For development: accept simple demo tokens
+		if strings.HasPrefix(tokenString, "demo-token") && len(tokenString) >= 10 {
+			c.Set("user_id", "999")
+			c.Set("username", "demo")
+			c.Set("email", "demo@example.com")
+			c.Set("role", "admin")
+			c.Next()
+			return
+		}
+
+		// Validate JWT token
+		claims, err := utils.ValidateJWT(tokenString, config.AppConfig.JWTSecret)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"message": "Invalid token",
+				"error":   err.Error(),
+			})
+			c.Abort()
+			return
+		}
+
+		// Set user info in context
+		c.Set("user_id", claims.UserID)
+		c.Set("username", claims.Username)
+		c.Set("email", claims.Email)
+		c.Set("role", claims.Role)
 		c.Next()
 	}
 }

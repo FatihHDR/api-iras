@@ -60,3 +60,55 @@ type GSTRequest struct {
 	ClientID string `json:"clientID" validate:"required"`
 	RegID    string `json:"regID" validate:"required"`
 }
+
+// User model for authentication
+type User struct {
+	BaseModel
+	Username string `json:"username" gorm:"uniqueIndex;not null" validate:"required,min=3,max=50"`
+	Email    string `json:"email" gorm:"uniqueIndex;not null" validate:"required,email"`
+	Password string `json:"-" gorm:"not null" validate:"required,min=6"`
+	Role     string `json:"role" gorm:"default:user" validate:"oneof=admin user"`
+	IsActive bool   `json:"is_active" gorm:"default:true"`
+}
+
+// Auth Request models
+type RegisterRequest struct {
+	Username string `json:"username" validate:"required,min=3,max=50"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6"`
+}
+
+type LoginRequest struct {
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
+// Auth Response models
+type LoginResponse struct {
+	Token     string    `json:"token"`
+	ExpiresIn int       `json:"expires_in"`
+	UserInfo  *UserInfo `json:"user_info"`
+}
+
+type UserInfo struct {
+	ID       uint   `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Role     string `json:"role"`
+}
+
+// API Response models
+type APIResponse struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+	Error   string      `json:"error,omitempty"`
+}
+
+type PaginationResponse struct {
+	Data       interface{} `json:"data"`
+	Total      int64       `json:"total"`
+	Page       int         `json:"page"`
+	Limit      int         `json:"limit"`
+	TotalPages int         `json:"total_pages"`
+}

@@ -3,11 +3,13 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -86,4 +88,63 @@ func BuildSearchQuery(search string) string {
 		return ""
 	}
 	return fmt.Sprintf("%%%s%%", strings.ToLower(search))
+}
+
+// JWT Claims structure
+type JWTClaims struct {
+	UserID   string `json:"user_id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Role     string `json:"role"`
+	jwt.RegisteredClaims
+}
+
+// GenerateJWT generates a JWT token with user information
+func GenerateJWT(userID, username, email, role, secret string) (string, error) {
+	claims := JWTClaims{
+		UserID:   userID,
+		Username: username,
+		Email:    email,
+		Role:     role,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			Issuer:    "api-iras",
+			Subject:   userID,
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(secret))
+}
+
+// ValidateJWT validates a JWT token and returns claims
+func ValidateJWT(tokenString, secret string) (*JWTClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return []byte(secret), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(*JWTClaims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, errors.New("invalid token")
+}
+
+// GenerateJWTSecret generates a secure JWT secret
+func GenerateJWTSecret() (string, error) {
+	return GenerateRandomString(32)
+}
+
+// ValidateJWTSecret checks if JWT secret is secure enough
+func ValidateJWTSecret(secret string) bool {
+	return len(secret) >= 32 // Minimum 32 characters for security
 }

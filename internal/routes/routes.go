@@ -30,9 +30,11 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 
 	// Initialize services
 	gstService := services.NewGSTService(db)
+	authService := services.NewAuthService(db)
 
 	// Initialize controllers
 	gstController := controllers.NewGSTController(gstService)
+	authController := controllers.NewAuthController(authService)
 
 	// IRAS GST API routes (following the swagger spec basePath)
 	irasGroup := router.Group("/iras/prod/GSTListing")
