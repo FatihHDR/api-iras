@@ -56,6 +56,7 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 	// Prepare response (exclude password)
 	userInfo := &models.UserInfo{
 		ID:       user.ID,
+		Name:     user.Name,
 		Username: user.Username,
 		Email:    user.Email,
 		Role:     user.Role,
@@ -108,9 +109,10 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 	// Prepare response
 	response := &models.LoginResponse{
 		Token:     token,
-		ExpiresIn: 86400, // 24 hours in seconds
+		ExpiresIn: 86400,
 		UserInfo: &models.UserInfo{
 			ID:       user.ID,
+			Name:     user.Name,
 			Username: user.Username,
 			Email:    user.Email,
 			Role:     user.Role,
@@ -152,6 +154,7 @@ func (ctrl *AuthController) GetProfile(c *gin.Context) {
 	// Prepare response
 	userInfo := &models.UserInfo{
 		ID:       user.ID,
+		Name:     user.Name,
 		Username: user.Username,
 		Email:    user.Email,
 		Role:     user.Role,

@@ -64,6 +64,7 @@ type GSTRequest struct {
 // User model for authentication
 type User struct {
 	BaseModel
+	Name     string `json:"name" gorm:"not null" validate:"required,min=2,max=100"`
 	Username string `json:"username" gorm:"uniqueIndex;not null" validate:"required,min=3,max=50"`
 	Email    string `json:"email" gorm:"uniqueIndex;not null" validate:"required,email"`
 	Password string `json:"-" gorm:"not null" validate:"required,min=6"`
@@ -73,6 +74,7 @@ type User struct {
 
 // Auth Request models
 type RegisterRequest struct {
+	Name     string `json:"name" validate:"required,min=2,max=100"`
 	Username string `json:"username" validate:"required,min=3,max=50"`
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=6"`
@@ -92,6 +94,7 @@ type LoginResponse struct {
 
 type UserInfo struct {
 	ID       uint   `json:"id"`
+	Name     string `json:"name"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Role     string `json:"role"`

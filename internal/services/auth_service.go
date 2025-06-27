@@ -38,6 +38,7 @@ func (s *AuthService) Register(req *models.RegisterRequest) (*models.User, error
 
 	// Create new user
 	user := &models.User{
+		Name:     req.Name,
 		Username: req.Username,
 		Email:    req.Email,
 		Password: hashedPassword,
