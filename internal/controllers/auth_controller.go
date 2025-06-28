@@ -40,6 +40,9 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 		return
 	}
 
+	// Log the request for debugging
+	fmt.Printf("Register request: %+v\n", req)
+
 	// Validate request
 	if err := ctrl.validator.Struct(&req); err != nil {
 		c.JSON(http.StatusBadRequest, utils.ErrorResponse("Validation failed", err))
@@ -235,6 +238,7 @@ func (ctrl *AuthController) GenerateDemoToken(c *gin.Context) {
 		ExpiresIn: 86400,
 		UserInfo: &models.UserInfo{
 			ID:       999,
+			Name:     "Demo User",
 			Username: "demo",
 			Email:    "demo@example.com",
 			Role:     "admin",

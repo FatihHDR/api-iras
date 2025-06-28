@@ -64,7 +64,7 @@ type GSTRequest struct {
 // User model for authentication
 type User struct {
 	BaseModel
-	Name     string `json:"name" gorm:"not null" validate:"required,min=2,max=100"`
+	Name     string `json:"name" gorm:"type:varchar(255)" validate:"required,min=2,max=100"`
 	Username string `json:"username" gorm:"uniqueIndex;not null" validate:"required,min=3,max=50"`
 	Email    string `json:"email" gorm:"uniqueIndex;not null" validate:"required,email"`
 	Password string `json:"-" gorm:"not null" validate:"required,min=6"`

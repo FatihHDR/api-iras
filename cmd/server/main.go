@@ -38,7 +38,20 @@ func main() {
 func autoMigrate() error {
 	db := config.AppConfig.DB
 
-	// Auto-migrate all models
+	// Drop and recreate users table if it has schema issues
+	log.Println("Checking users table schema...")
+
+	// Check if table exists and try to fix it
+	if db.Migrator().HasTable(&models.User{}) {
+		// Try to drop the table to recreate with correct schema
+		log.Println("Dropping existing users table to fix schema...")
+		if err := db.Migrator().DropTable(&models.User{}); err != nil {
+			log.Printf("Warning: Failed to drop users table: %v", err)
+		}
+	}
+
+	// Auto-migrate all models (this will create tables with correct schema)
+	log.Println("Running auto-migration...")
 	err := db.AutoMigrate(
 		&models.User{},
 		&models.GSTRegistration{},

@@ -19,6 +19,9 @@ func NewAuthService(db *gorm.DB) *AuthService {
 
 // Register creates a new user account
 func (s *AuthService) Register(req *models.RegisterRequest) (*models.User, error) {
+	// Log the request for debugging
+	fmt.Printf("Auth Service - Register request: %+v\n", req)
+
 	// Check if username already exists
 	var existingUser models.User
 	if err := s.db.Where("username = ?", req.Username).First(&existingUser).Error; err == nil {
@@ -45,6 +48,9 @@ func (s *AuthService) Register(req *models.RegisterRequest) (*models.User, error
 		Role:     "user", // Default role
 		IsActive: true,
 	}
+
+	// Log the user object before saving
+	fmt.Printf("Auth Service - User object before save: %+v\n", user)
 
 	if err := s.db.Create(user).Error; err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
