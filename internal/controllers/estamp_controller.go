@@ -446,6 +446,113 @@ func (ctrl *EStampController) SalePurchaseBuyers(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// @Summary Sale Purchase Sellers Stamping
+// @Description Submit sale purchase sellers document for stamping
+// @Tags eStamp
+// @Accept json
+// @Produce json
+// @Param X-IBM-Client-Id header string true "Client ID"
+// @Param X-IBM-Client-Secret header string true "Client Secret"
+// @Param access_token header string true "CorpPass Access Token"
+// @Param body body models.SalePurchaseSellersRequest true "Sale Purchase Sellers Stamp Request"
+// @Success 200 {object} models.EStampResponse
+// @Router /iras/sb/eStamp/SalePurchaseSellers [post]
+func (ctrl *EStampController) SalePurchaseSellers(c *gin.Context) {
+	// Validate headers
+	clientID := c.GetHeader("X-IBM-Client-Id")
+	clientSecret := c.GetHeader("X-IBM-Client-Secret")
+	accessToken := c.GetHeader("access_token")
+
+	// For development, accept demo credentials
+	if config.AppConfig.Env == "development" {
+		if clientID == "" {
+			clientID = config.AppConfig.IBMClientID
+		}
+		if clientSecret == "" {
+			clientSecret = config.AppConfig.IBMClientSecret
+		}
+		if accessToken == "" {
+			accessToken = "demo_access_token_123456"
+		}
+	}
+
+	if clientID == "" || clientSecret == "" {
+		c.JSON(http.StatusUnauthorized, models.EStampResponse{
+			ReturnCode: 40,
+			Info: &models.EStampInfo{
+				MessageCode: 40003,
+				Message:     "Missing required headers",
+				FieldInfoList: []models.EStampFieldError{
+					{
+						Field:   "headers",
+						Message: "X-IBM-Client-Id and X-IBM-Client-Secret are required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	if accessToken == "" {
+		c.JSON(http.StatusUnauthorized, models.EStampResponse{
+			ReturnCode: 40,
+			Info: &models.EStampInfo{
+				MessageCode: 40004,
+				Message:     "Missing access token",
+				FieldInfoList: []models.EStampFieldError{
+					{
+						Field:   "access_token",
+						Message: "CorpPass access token is required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Parse request body
+	var req models.SalePurchaseSellersRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.EStampResponse{
+			ReturnCode: 40,
+			Info: &models.EStampInfo{
+				MessageCode: 40005,
+				Message:     "Invalid request format",
+				FieldInfoList: []models.EStampFieldError{
+					{
+						Field:   "body",
+						Message: "Invalid JSON format or missing required fields",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Validate required fields
+	if req.AssignID == "" || req.DocumentDescription == "" {
+		c.JSON(http.StatusBadRequest, models.EStampResponse{
+			ReturnCode: 40,
+			Info: &models.EStampInfo{
+				MessageCode: 40006,
+				Message:     "Missing required fields",
+				FieldInfoList: []models.EStampFieldError{
+					{
+						Field:   "assignId,documentDescription",
+						Message: "AssignID and DocumentDescription are required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Process stamp calculation (simulation)
+	response := ctrl.processSalePurchaseSellers(&req)
+
+	c.JSON(http.StatusOK, response)
+}
+
 // Helper methods for eStamp processing
 func (ctrl *EStampController) processStampTenancyAgreement(req *models.StampTenancyAgreementRequest) models.EStampResponse {
 	// Simulate stamp duty calculation for tenancy agreement
@@ -570,6 +677,50 @@ func (ctrl *EStampController) processSalePurchaseBuyers(req *models.SalePurchase
 			TotalAmtPayable: fmt.Sprintf("%.2f", stampDuty),
 			PaymentDueDate:  "2025-08-06", // 30 days from now
 			PDFBase64:       ctrl.generateMockPDF("Sale Purchase Buyers", docRefNo),
+		},
+	}
+}
+
+func (ctrl *EStampController) processSalePurchaseSellers(req *models.SalePurchaseSellersRequest) models.EStampResponse {
+	// Simulate stamp duty calculation for sale purchase sellers
+	purchasePrice := req.PurchasePrice
+	sellingPrice := req.SellingPrice
+	considerationAmount := req.ConsiderationAmount
+
+	// Use the highest value for calculation
+	var baseAmount float64
+	if sellingPrice > 0 && sellingPrice > purchasePrice && sellingPrice > considerationAmount {
+		baseAmount = sellingPrice
+	} else if considerationAmount > 0 && considerationAmount > purchasePrice {
+		baseAmount = considerationAmount
+	} else {
+		baseAmount = purchasePrice
+	}
+
+	// Simple calculation: 3% of base amount or $5 whichever is higher
+	stampDuty := baseAmount * 0.03
+	if stampDuty < 5.0 {
+		stampDuty = 5.0
+	}
+
+	// Apply ABSD if applicable
+	if req.IntentToClaimAbsdRefund == 1 {
+		absdAmount := baseAmount * 0.20 // 20% ABSD
+		stampDuty += absdAmount
+	}
+
+	// Generate mock document reference
+	docRefNo := "SPS" + ctrl.generateDocumentReference()
+
+	return models.EStampResponse{
+		ReturnCode: 10,
+		Data: &models.EStampData{
+			DocRefNo:        docRefNo,
+			SDAmount:        fmt.Sprintf("%.2f", stampDuty),
+			SDPenalty:       "0.00",
+			TotalAmtPayable: fmt.Sprintf("%.2f", stampDuty),
+			PaymentDueDate:  "2025-08-06", // 30 days from now
+			PDFBase64:       ctrl.generateMockPDF("Sale Purchase Sellers", docRefNo),
 		},
 	}
 }

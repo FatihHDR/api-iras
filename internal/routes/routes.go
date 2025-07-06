@@ -24,7 +24,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "OK",
 			"message": "IRAS GST API is running",
-			"version": "1.0.7",
+			"version": "1.0.8",
 		})
 	})
 
@@ -59,6 +59,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		eStampGroup.POST("/ShareTransfer", eStampController.ShareTransfer)
 		eStampGroup.POST("/StampMortgage", eStampController.StampMortgage)
 		eStampGroup.POST("/SalePurchaseBuyers", eStampController.SalePurchaseBuyers)
+		eStampGroup.POST("/SalePurchaseSellers", eStampController.SalePurchaseSellers)
 	}
 
 	// Authentication routes (public)
@@ -95,7 +96,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		c.JSON(http.StatusOK, gin.H{
 			"title":       "Check GST Register",
 			"description": "The Check GST Register API enables you to check whether businesses are GST-registered based on their GST registration number, UEN or NRIC.",
-			"version":     "1.0.7",
+			"version":     "1.0.8",
 			"basePath":    "/iras/prod/GSTListing",
 			"schemes":     []string{"https"},
 			"host":        "apiservices.iras.gov.sg",
@@ -103,6 +104,17 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 			"produces":    []string{"application/json"},
 			"endpoints": gin.H{
 				"main": "/iras/prod/GSTListing/SearchGSTRegistered",
+				"eStamp": gin.H{
+					"tenancy_agreement":     "/iras/sb/eStamp/StampTenancyAgreement",
+					"share_transfer":        "/iras/sb/eStamp/ShareTransfer",
+					"stamp_mortgage":        "/iras/sb/eStamp/StampMortgage",
+					"sale_purchase_buyers":  "/iras/sb/eStamp/SalePurchaseBuyers",
+					"sale_purchase_sellers": "/iras/sb/eStamp/SalePurchaseSellers",
+				},
+				"corppass": gin.H{
+					"auth":  "/iras/sb/Authentication/CorpPassAuth",
+					"token": "/iras/sb/Authentication/CorpPassToken",
+				},
 				"admin": gin.H{
 					"create": "/admin/gst-registrations",
 					"list":   "/admin/gst-registrations",
