@@ -35,6 +35,8 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	// Initialize controllers
 	gstController := controllers.NewGSTController(gstService)
 	authController := controllers.NewAuthController(authService)
+	corpPassController := controllers.NewCorpPassController()
+	eStampController := controllers.NewEStampController()
 
 	// IRAS GST API routes (following the swagger spec basePath)
 	irasGroup := router.Group("/iras/prod/GSTListing")
@@ -46,15 +48,15 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	// IRAS CorpPass Authentication routes
 	corpPassGroup := router.Group("/iras/sb/Authentication")
 	{
-		corpPassGroup.GET("/CorpPassAuth", gstController.CorpPassAuth)
-		corpPassGroup.POST("/CorpPassToken", gstController.CorpPassToken)
+		corpPassGroup.GET("/CorpPassAuth", corpPassController.CorpPassAuth)
+		corpPassGroup.POST("/CorpPassToken", corpPassController.CorpPassToken)
 	}
 
 	// IRAS eStamp routes
 	eStampGroup := router.Group("/iras/sb/eStamp")
 	{
-		eStampGroup.POST("/StampTenancyAgreement", gstController.StampTenancyAgreement)
-		eStampGroup.POST("/ShareTransfer", gstController.ShareTransfer)
+		eStampGroup.POST("/StampTenancyAgreement", eStampController.StampTenancyAgreement)
+		eStampGroup.POST("/ShareTransfer", eStampController.ShareTransfer)
 	}
 
 	// Authentication routes (public)
