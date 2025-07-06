@@ -648,3 +648,31 @@ type RemissionOptionData struct {
 	SelectedOption    int `json:"selectedOption"`
 	SelectedSubOption int `json:"selectedSubOption"`
 }
+
+// AIS Organization Search models based on IRAS API spec
+type AISorgSearchRequest struct {
+	ClientID       string `json:"clientID" validate:"required"`
+	OrganizationID string `json:"organizationID" validate:"required"`
+	BasisYear      int    `json:"basisYear" validate:"required"`
+}
+
+type AISorgSearchResponse struct {
+	ReturnCode int             `json:"returnCode"`
+	Data       *AISorgData     `json:"data,omitempty"`
+	Info       *AISorgInfo     `json:"info,omitempty"`
+}
+
+type AISorgData struct {
+	OrganizationInAIS string `json:"organizationInAIS"`
+}
+
+type AISorgInfo struct {
+	MessageCode   string            `json:"messageCode"`
+	Message       string            `json:"message"`
+	FieldInfoList []AISorgFieldError `json:"fieldInfoList,omitempty"`
+}
+
+type AISorgFieldError struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}

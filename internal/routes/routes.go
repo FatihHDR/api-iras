@@ -31,12 +31,14 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	// Initialize services
 	gstService := services.NewGSTService(db)
 	authService := services.NewAuthService(db)
+	aisService := services.NewAISService()
 
 	// Initialize controllers
 	gstController := controllers.NewGSTController(gstService)
 	authController := controllers.NewAuthController(authService)
 	corpPassController := controllers.NewCorpPassController()
 	eStampController := controllers.NewEStampController()
+	aisController := controllers.NewAISController(aisService)
 
 	// IRAS GST API routes (following the swagger spec basePath)
 	irasGroup := router.Group("/iras/prod/GSTListing")
@@ -60,6 +62,12 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		eStampGroup.POST("/StampMortgage", eStampController.StampMortgage)
 		eStampGroup.POST("/SalePurchaseBuyers", eStampController.SalePurchaseBuyers)
 		eStampGroup.POST("/SalePurchaseSellers", eStampController.SalePurchaseSellers)
+	}
+
+	// IRAS AIS routes
+	aisGroup := router.Group("/iras/sb/ESubmission")
+	{
+		aisGroup.POST("/AISOrgSearch", aisController.AISOrgSearch)
 	}
 
 	// Authentication routes (public)
@@ -114,6 +122,9 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 				"corppass": gin.H{
 					"auth":  "/iras/sb/Authentication/CorpPassAuth",
 					"token": "/iras/sb/Authentication/CorpPassToken",
+				},
+				"ais": gin.H{
+					"org_search": "/iras/sb/ESubmission/AISOrgSearch",
 				},
 				"admin": gin.H{
 					"create": "/admin/gst-registrations",
