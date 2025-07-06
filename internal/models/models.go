@@ -118,7 +118,7 @@ type PaginationResponse struct {
 
 // CorpPass Authentication models based on IRAS API spec
 type CorpPassAuthResponse struct {
-	ReturnCode int              `json:"returnCode"`
+	ReturnCode int               `json:"returnCode"`
 	Data       *CorpPassAuthData `json:"data,omitempty"`
 	Info       *CorpPassAuthInfo `json:"info,omitempty"`
 }
