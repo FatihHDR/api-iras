@@ -43,6 +43,13 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		irasGroup.POST("/SearchGSTRegistered", gstController.SearchGSTRegistered)
 	}
 
+	// IRAS CorpPass Authentication routes
+	corpPassGroup := router.Group("/iras/sb/Authentication")
+	{
+		corpPassGroup.GET("/CorpPassAuth", gstController.CorpPassAuth)
+		corpPassGroup.POST("/CorpPassToken", gstController.CorpPassToken)
+	}
+
 	// Authentication routes (public)
 	authGroup := router.Group("/auth")
 	{

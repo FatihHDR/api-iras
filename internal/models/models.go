@@ -115,3 +115,43 @@ type PaginationResponse struct {
 	Limit      int         `json:"limit"`
 	TotalPages int         `json:"total_pages"`
 }
+
+// CorpPass Authentication models based on IRAS API spec
+type CorpPassAuthResponse struct {
+	ReturnCode int              `json:"returnCode"`
+	Data       *CorpPassAuthData `json:"data,omitempty"`
+	Info       *CorpPassAuthInfo `json:"info,omitempty"`
+}
+
+type CorpPassAuthData struct {
+	URL string `json:"url"`
+}
+
+type CorpPassAuthInfo struct {
+	MessageCode   string               `json:"messageCode"`
+	Message       string               `json:"message"`
+	FieldInfoList []CorpPassFieldError `json:"fieldInfoList,omitempty"`
+}
+
+type CorpPassFieldError struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
+
+// CorpPass Token Request/Response models
+type CorpPassTokenRequest struct {
+	ID int64 `json:"id" validate:"required"`
+}
+
+type CorpPassTokenResponse struct {
+	ReturnCode int                `json:"returnCode"`
+	Data       *CorpPassTokenData `json:"data,omitempty"`
+	Info       *CorpPassAuthInfo  `json:"info,omitempty"`
+}
+
+type CorpPassTokenData struct {
+	AccessToken  string `json:"access_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+}
