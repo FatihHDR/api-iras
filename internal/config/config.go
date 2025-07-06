@@ -29,7 +29,7 @@ func InitConfig() {
 	}
 
 	config := &Config{
-		Port:            getEnv("PORT", "8080"),
+		Port:            getEnv("PORT", "8090"),
 		JWTSecret:       getEnv("JWT_SECRET", "default-secret-key"),
 		Env:             getEnv("ENV", "development"),
 		IBMClientID:     getEnv("IBM_CLIENT_ID", "demo-client-id-12345"),
