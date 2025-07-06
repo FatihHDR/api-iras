@@ -237,27 +237,50 @@ type AssetsData struct {
 }
 
 type PropertyData struct {
-	Sequence                             int     `json:"sequence"`
-	PostalCode                           string  `json:"postalCode"`
-	StreetName                           string  `json:"streetName"`
-	BlockNo                              string  `json:"blockNo"`
-	PropertyType                         int     `json:"propertyType"`
-	BuyingPriceMarketValueResidential    float64 `json:"buyingPriceMarketValueResidential"`
-	BuyingPriceMarketValueNonResidential float64 `json:"buyingPriceMarketValueNonResidential"`
-	TotalFloorArea                       float64 `json:"totalFloorArea"`
-	ValuationType                        int     `json:"valuationType"`
-	ValuationValue                       float64 `json:"valuationValue"`
+	Sequence                             int                     `json:"sequence"`
+	PostalCode                           string                  `json:"postalCode"`
+	StreetName                           string                  `json:"streetName"`
+	BlockNo                              string                  `json:"blockNo"`
+	LevelUnits                           []LevelUnitData         `json:"levelUnits,omitempty"`
+	ShareOfPropertyTransferred           int                     `json:"shareOfPropertyTransferred,omitempty"`
+	MannerOfHolding                      int                     `json:"mannerOfHolding,omitempty"`
+	FractionNumerator                    int                     `json:"fractionNumerator,omitempty"`
+	FractionDenominator                  int                     `json:"fractionDenominator,omitempty"`
+	PropertyOwnerships                   []PropertyOwnershipData `json:"propertyOwnerships,omitempty"`
+	PropertyType                         int                     `json:"propertyType"`
+	BuyingPriceMarketValueResidential    float64                 `json:"buyingPriceMarketValueResidential"`
+	BuyingPriceMarketValueNonResidential float64                 `json:"buyingPriceMarketValueNonResidential"`
+	SellingPriceMarketValueResidential   float64                 `json:"sellingPriceMarketValueResidential,omitempty"`
+	SellingPriceMarketValueNonResidential float64                `json:"sellingPriceMarketValueNonResidential,omitempty"`
+	IsWhollyRented                       bool                    `json:"isWhollyRented,omitempty"`
+	TotalFloorArea                       float64                 `json:"totalFloorArea"`
+	FloorAreaMeasurementType             int                     `json:"floorAreaMeasurementType,omitempty"`
+	TotalFloorAreaNotAvailable           bool                    `json:"totalFloorAreaNotAvailable,omitempty"`
+	ValuationType                        int                     `json:"valuationType"`
+	ValuationValue                       float64                 `json:"valuationValue"`
+	AbsdRate                             float64                 `json:"absdRate,omitempty"`
 }
 
 type LandData struct {
-	Sequence                             int     `json:"sequence"`
-	LandIDType                           int     `json:"landIdType"`
-	MKOrTSNo                             string  `json:"mkOrTSNo"`
-	StreetName                           string  `json:"streetName"`
-	BuyingPriceMarketValueResidential    float64 `json:"buyingPriceMarketValueResidential"`
-	BuyingPriceMarketValueNonResidential float64 `json:"buyingPriceMarketValueNonResidential"`
-	ValuationType                        int     `json:"valuationType"`
-	ValuationValue                       float64 `json:"valuationValue"`
+	Sequence                             int                 `json:"sequence"`
+	LandIDType                           int                 `json:"landIdType"`
+	MKOrTSNo                             string              `json:"mkOrTSNo"`
+	StreetName                           string              `json:"streetName"`
+	FTLotNo                              string              `json:"ftLotNo,omitempty"`
+	FTPlOrPtParcelNo                     string              `json:"ftPlOrPtParcelNo,omitempty"`
+	ShareOfLandTransferred               int                 `json:"shareOfLandTransferred,omitempty"`
+	FractionNumerator                    int                 `json:"fractionNumerator,omitempty"`
+	FractionDenominator                  int                 `json:"fractionDenominator,omitempty"`
+	MannerOfHolding                      int                 `json:"mannerOfHolding,omitempty"`
+	MasterPlanZoning                     int                 `json:"masterPlanZoning,omitempty"`
+	BuyingPriceMarketValueResidential    float64             `json:"buyingPriceMarketValueResidential"`
+	BuyingPriceMarketValueNonResidential float64             `json:"buyingPriceMarketValueNonResidential"`
+	SellingPriceMarketValueResidential   float64             `json:"sellingPriceMarketValueResidential,omitempty"`
+	SellingPriceMarketValueNonResidential float64            `json:"sellingPriceMarketValueNonResidential,omitempty"`
+	LandOwnership                        []LandOwnershipData `json:"landOwnership,omitempty"`
+	ValuationType                        int                 `json:"valuationType"`
+	ValuationValue                       float64             `json:"valuationValue"`
+	AbsdRate                             float64             `json:"absdRate,omitempty"`
 }
 
 type StockShareData struct {
@@ -333,4 +356,179 @@ type AssessmentRemissionData struct {
 	Sequence             int    `json:"sequence"`
 	RemissionType        string `json:"remissionType"`
 	RemissionOptionText1 string `json:"remissionOptionText1"`
+}
+
+// Stamp Mortgage Models
+type StampMortgageRequest struct {
+	AssignID                     string               `json:"assignId" binding:"required"`
+	FTReferenceNo               string               `json:"ftReferenceNo"`
+	DocumentDescription         string               `json:"documentDescription" binding:"required"`
+	DocumentReferenceNo         string               `json:"documentReferenceNo"`
+	FormatOfDocument            int                  `json:"formatOfDocument"`
+	ModeOfOffer                 int                  `json:"modeOfOffer"`
+	ModeOfAcceptance            int                  `json:"modeOfAcceptance"`
+	IsSignedInSingapore         bool                 `json:"isSignedInSingapore"`
+	DateOfDocument              string               `json:"dateOfDocument"`
+	ReceivingDateOfDocument     string               `json:"receivingDateOfDocument"`
+	IsDocumentDateUnavailable   bool                 `json:"isDocumentDateUnavailable"`
+	Submission                  SubmissionData       `json:"submission"`
+	Assets                      MortgageAssetsData   `json:"assets"`
+	TypeOfMortgage              int                  `json:"typeOfMortgage"`
+	AmountOfLoan                float64              `json:"amountOfLoan" binding:"required"`
+	Mortgagors                  []MortgagePartyData  `json:"mortgagors"`
+	Mortgagees                  []MortgagePartyData  `json:"mortgagees"`
+}
+
+type MortgageAssetsData struct {
+	Properties   []PropertyData   `json:"properties"`
+	Lands        []LandData       `json:"lands"`
+	StocksShares []StockShareData `json:"stocksShares"`
+	Security     []SecurityData   `json:"security"`
+}
+
+type MortgagePartyData struct {
+	Sequence         int                `json:"sequence"`
+	TypeOfProfile    int                `json:"typeOfProfile"`
+	TaxEntityIDType  int                `json:"taxEntityIdType"`
+	TaxEntityIDNo    string             `json:"taxEntityIdNo"`
+	FTTaxEntityName  string             `json:"ftTaxEntityName"`
+	Gender           int                `json:"gender"`
+	DateOfBirth      string             `json:"dateOfBirth"`
+	MailingAddress   MailingAddressData `json:"mailingAddress"`
+	PartyType        string             `json:"partyType"`
+	IsVerifiedEntity bool               `json:"isVerifiedEntity"`
+	IsLiableParty    bool               `json:"isLiableParty"`
+}
+
+// Sale Purchase Buyers Models
+type SalePurchaseBuyersRequest struct {
+	AssignID                                         string                       `json:"assignId" binding:"required"`
+	FTReferenceNo                                   string                       `json:"ftReferenceNo"`
+	DocumentDescription                             string                       `json:"documentDescription" binding:"required"`
+	DocumentReferenceNo                             string                       `json:"documentReferenceNo"`
+	FormatOfDocument                                int                          `json:"formatOfDocument"`
+	ModeOfOffer                                     int                          `json:"modeOfOffer"`
+	ModeOfAcceptance                                int                          `json:"modeOfAcceptance"`
+	IsSignedInSingapore                             bool                         `json:"isSignedInSingapore"`
+	DateOfDocument                                  string                       `json:"dateOfDocument"`
+	ReceivingDateOfDocument                         string                       `json:"receivingDateOfDocument"`
+	IsDocumentDateUnavailable                       bool                         `json:"isDocumentDateUnavailable"`
+	Submission                                      SubmissionData               `json:"submission"`
+	Assets                                          SalePurchaseAssetsData       `json:"assets"`
+	RetrievedStampingRecord                         string                       `json:"retrievedStampingRecord"`
+	HasIntentToHoldThePropInTrustForBeneficialOwner bool                         `json:"hasIntentToHoldThePropInTrustForBeneficialOwner"`
+	HasIntentToTransferPropViaConveyanceDirection   bool                         `json:"hasIntentToTransferPropViaConveyanceDirection"`
+	PurchasePrice                                   float64                      `json:"purchasePrice" binding:"required"`
+	AnyConsiderationPaid                            float64                      `json:"anyConsiderationPaid"`
+	ConsiderationAmount                             float64                      `json:"considerationAmount"`
+	ConservancyCharges                              float64                      `json:"conservancyCharges"`
+	ConservancyChargesUnitOfMeasure                 int                          `json:"conservancyChargesUnitOfMeasure"`
+	TrusteeBeneficiaryDetails                       TrusteeBeneficiaryData       `json:"trusteeBeneficiaryDetails"`
+	SellerTransferor                                []SalePurchasePartyData      `json:"sellerTransferor"`
+	BuyerTransferee                                 []SalePurchasePartyData      `json:"buyerTransferee"`
+	Trustee                                         []SalePurchasePartyData      `json:"trustee"`
+	Beneficiary                                     []SalePurchasePartyData      `json:"beneficiary"`
+	AssessmentRemissions                            []AssessmentRemissionData    `json:"assessmentRemissions"`
+	PropertyBuyers                                  []PropertyBuyerData          `json:"propertyBuyers"`
+	IntentToClaimAbsdRefund                         int                          `json:"intentToClaimAbsdRefund"`
+	AbsdRefundAssets                                AbsdRefundAssetsData         `json:"absdRefundAssets"`
+	MaritalStatus                                   MaritalStatusData            `json:"maritalStatus"`
+}
+
+type SalePurchaseAssetsData struct {
+	Properties   []PropertyData   `json:"properties"`
+	Lands        []LandData       `json:"lands"`
+	StocksShares []StockShareData `json:"stocksShares"`
+	Security     []SecurityData   `json:"security"`
+}
+
+type LevelUnitData struct {
+	FloorNo                           string  `json:"floorNo"`
+	UnitNo                            string  `json:"unitNo"`
+	AbsdRate                          float64 `json:"absdRate"`
+	BuyingPriceMarketValueResidential float64 `json:"buyingPriceMarketValueResidential"`
+}
+
+type PropertyOwnershipData struct {
+	Sequence         int `json:"sequence"`
+	ShareNumerator   int `json:"shareNumerator"`
+	ShareDenominator int `json:"shareDenominator"`
+}
+
+type LandOwnershipData struct {
+	Sequence         int `json:"sequence"`
+	ShareNumerator   int `json:"shareNumerator"`
+	ShareDenominator int `json:"shareDenominator"`
+}
+
+type SalePurchasePartyData struct {
+	Sequence                     int                `json:"sequence"`
+	TypeOfProfile                int                `json:"typeOfProfile"`
+	TaxEntityIDType              int                `json:"taxEntityIdType"`
+	TaxEntityIDNo                string             `json:"taxEntityIdNo"`
+	FTTaxEntityName              string             `json:"ftTaxEntityName"`
+	Gender                       int                `json:"gender"`
+	DateOfBirth                  string             `json:"dateOfBirth"`
+	IsSubFundOwnerLessee         bool               `json:"isSubFundOwnerLessee"`
+	MailingAddress               MailingAddressData `json:"mailingAddress"`
+	PartyType                    string             `json:"partyType"`
+	CountryOfNationality         string             `json:"countryOfNationality"`
+	IsVerifiedEntity             bool               `json:"isVerifiedEntity"`
+	BeneficiaryIsUnidentifiable  bool               `json:"beneficiaryIsUnidentifiable"`
+	FTDescription                string             `json:"ftDescription"`
+	IsLiableParty                bool               `json:"isLiableParty"`
+}
+
+type TrusteeBeneficiaryData struct {
+	RelationshipBetweenTrusteeAndBeneficiary int                    `json:"relationshipBetweenTrusteeAndBeneficiary"`
+	FTRelationshipOthersValue                string                 `json:"ftRelationshipOthersValue"`
+	Reasons                                  TrusteeReasonsData     `json:"reasons"`
+}
+
+type TrusteeReasonsData struct {
+	IsReasonBeneficiaryIsMinor              bool   `json:"isReasonBeneficiaryIsMinor"`
+	IsReasonBeneficiaryIsNotLegalEntity     bool   `json:"isReasonBeneficiaryIsNotLegalEntity"`
+	IsReasonEstatePlanning                  bool   `json:"isReasonEstatePlanning"`
+	IsReasonPursuantToNomineeArrangement    bool   `json:"isReasonPursuantToNomineeArrangement"`
+	IsReasonOthers                          bool   `json:"isReasonOthers"`
+	FTReasonsOthersValue                    string `json:"ftReasonsOthersValue"`
+}
+
+type PropertyBuyerData struct {
+	TypeOfProfile                int    `json:"typeOfProfile"`
+	TaxEntityIDType              int    `json:"taxEntityIdType"`
+	TaxEntityIDNo                string `json:"taxEntityIdNo"`
+	PartyType                    string `json:"partyType"`
+	NoOfProperties               int    `json:"noOfProperties"`
+	BuyerName                    string `json:"buyerName"`
+	Sequence                     int    `json:"sequence"`
+	AssessmentPartiesSequence    int    `json:"assessmentPartiesSequence"`
+}
+
+type AbsdRefundAssetsData struct {
+	Assets                   AbsdRefundAssetsDetail `json:"assets"`
+	CompletedProperty        bool                   `json:"completedProperty"`
+	PaymentMode              int                    `json:"paymentMode"`
+	FTCpfHdbRefno            string                 `json:"ftCpfHdbRefno"`
+	CashRecipientSequence    int                    `json:"cashRecipientSequence"`
+	CpfRecipient             []CpfRecipientData     `json:"cpfRecipient"`
+	Declaration              bool                   `json:"declaration"`
+}
+
+type AbsdRefundAssetsDetail struct {
+	Properties     []PropertyData `json:"properties"`
+	Lands          []LandData     `json:"lands"`
+	StocksShares   []StockShareData `json:"stocksShares"`
+	Security       []SecurityData `json:"security"`
+	AbsdProperties []PropertyData `json:"absdProperties"`
+	AbsdLands      []LandData     `json:"absdLands"`
+}
+
+type CpfRecipientData struct {
+	CpfAmountUsed float64 `json:"cpfAmountUsed"`
+	Sequence      int     `json:"sequence"`
+}
+
+type MaritalStatusData struct {
+	MarriedCouple int `json:"marriedCouple"`
 }

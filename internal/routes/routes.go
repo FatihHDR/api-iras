@@ -57,6 +57,8 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	{
 		eStampGroup.POST("/StampTenancyAgreement", eStampController.StampTenancyAgreement)
 		eStampGroup.POST("/ShareTransfer", eStampController.ShareTransfer)
+		eStampGroup.POST("/StampMortgage", eStampController.StampMortgage)
+		eStampGroup.POST("/SalePurchaseBuyers", eStampController.SalePurchaseBuyers)
 	}
 
 	// Authentication routes (public)
