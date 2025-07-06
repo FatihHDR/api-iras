@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"api-iras/internal/config"
 	"api-iras/internal/models"
 	"api-iras/internal/services"
 	"net/http"
@@ -31,6 +32,16 @@ func (ctrl *GSTController) SearchGSTRegistered(c *gin.Context) {
 	// Validate headers
 	clientID := c.GetHeader("X-IBM-Client-Id")
 	clientSecret := c.GetHeader("X-IBM-Client-Secret")
+
+	// For development, accept demo credentials
+	if config.AppConfig.Env == "development" {
+		if clientID == "" {
+			clientID = config.AppConfig.IBMClientID
+		}
+		if clientSecret == "" {
+			clientSecret = config.AppConfig.IBMClientSecret
+		}
+	}
 
 	if clientID == "" || clientSecret == "" {
 		c.JSON(http.StatusUnauthorized, models.GSTResponse{

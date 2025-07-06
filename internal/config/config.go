@@ -12,10 +12,12 @@ import (
 )
 
 type Config struct {
-	DB        *gorm.DB
-	Port      string
-	JWTSecret string
-	Env       string
+	DB              *gorm.DB
+	Port            string
+	JWTSecret       string
+	Env             string
+	IBMClientID     string
+	IBMClientSecret string
 }
 
 var AppConfig *Config
@@ -27,9 +29,11 @@ func InitConfig() {
 	}
 
 	config := &Config{
-		Port:      getEnv("PORT", "8080"),
-		JWTSecret: getEnv("JWT_SECRET", "default-secret-key"),
-		Env:       getEnv("ENV", "development"),
+		Port:            getEnv("PORT", "8080"),
+		JWTSecret:       getEnv("JWT_SECRET", "default-secret-key"),
+		Env:             getEnv("ENV", "development"),
+		IBMClientID:     getEnv("IBM_CLIENT_ID", "demo-client-id-12345"),
+		IBMClientSecret: getEnv("IBM_CLIENT_SECRET", "demo-client-secret-67890"),
 	}
 
 	// Initialize database
