@@ -657,9 +657,9 @@ type AISorgSearchRequest struct {
 }
 
 type AISorgSearchResponse struct {
-	ReturnCode int             `json:"returnCode"`
-	Data       *AISorgData     `json:"data,omitempty"`
-	Info       *AISorgInfo     `json:"info,omitempty"`
+	ReturnCode int         `json:"returnCode"`
+	Data       *AISorgData `json:"data,omitempty"`
+	Info       *AISorgInfo `json:"info,omitempty"`
 }
 
 type AISorgData struct {
@@ -667,8 +667,8 @@ type AISorgData struct {
 }
 
 type AISorgInfo struct {
-	MessageCode   string            `json:"messageCode"`
-	Message       string            `json:"message"`
+	MessageCode   string             `json:"messageCode"`
+	Message       string             `json:"message"`
 	FieldInfoList []AISorgFieldError `json:"fieldInfoList,omitempty"`
 }
 

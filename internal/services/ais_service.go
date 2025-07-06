@@ -87,7 +87,7 @@ func (s *AISService) checkOrganizationInAIS(clientID, organizationID string, bas
 	// TODO: In real implementation, use clientID and basisYear for API call
 	_ = clientID  // Suppress unused parameter warning
 	_ = basisYear // Suppress unused parameter warning
-	
+
 	// Demo logic: Return "Y" for specific test cases, "N" for others
 	testOrganizations := map[string]bool{
 		"4396029847797760": true,  // Test organization exists
