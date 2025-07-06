@@ -50,6 +50,13 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		corpPassGroup.POST("/CorpPassToken", gstController.CorpPassToken)
 	}
 
+	// IRAS eStamp routes
+	eStampGroup := router.Group("/iras/sb/eStamp")
+	{
+		eStampGroup.POST("/StampTenancyAgreement", gstController.StampTenancyAgreement)
+		eStampGroup.POST("/ShareTransfer", gstController.ShareTransfer)
+	}
+
 	// Authentication routes (public)
 	authGroup := router.Group("/auth")
 	{
