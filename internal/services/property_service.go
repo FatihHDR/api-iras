@@ -91,8 +91,8 @@ func (s *PropertyService) RetrieveConsolidatedStatement(req *models.PropertyCons
 	return &models.PropertyConsolidatedStatementResponse{
 		ReturnCode: 0,
 		Data: &models.PropertyConsolidatedStatementData{
-			RefNo:             propertyRecord.RefNo,
-			PropertyTaxRef:    propertyRecord.PropertyTaxRef,
+			RefNo:                 propertyRecord.RefNo,
+			PropertyTaxRef:        propertyRecord.PropertyTaxRef,
 			ConsolidatedStatement: &consolidatedStatement,
 		},
 	}, nil
@@ -102,7 +102,7 @@ func (s *PropertyService) RetrieveConsolidatedStatement(req *models.PropertyCons
 func (s *PropertyService) generateMockConsolidatedStatement(req *models.PropertyConsolidatedStatementRequest) *models.PropertyConsolidatedStatementResponse {
 	// Generate mock data based on the reference numbers provided
 	currentDate := time.Now().Format("2006-01-02")
-	
+
 	return &models.PropertyConsolidatedStatementResponse{
 		ReturnCode: 0,
 		Data: &models.PropertyConsolidatedStatementData{
@@ -121,7 +121,7 @@ func (s *PropertyService) generateMockConsolidatedStatement(req *models.Property
 						Status:       "Outstanding",
 					},
 					{
-						PropertyID:   "PROP002", 
+						PropertyID:   "PROP002",
 						Address:      "456 Marina Bay, Singapore 018956",
 						PropertyType: "Commercial",
 						TaxAmount:    "1,300.00",

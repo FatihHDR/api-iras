@@ -679,8 +679,8 @@ type AISorgFieldError struct {
 
 // Property Consolidated Statement models based on IRAS API spec
 type PropertyConsolidatedStatementRequest struct {
-	RefNo           string `json:"refNo" validate:"required"`
-	PropertyTaxRef  string `json:"propertyTaxRef" validate:"required"`
+	RefNo          string `json:"refNo" validate:"required"`
+	PropertyTaxRef string `json:"propertyTaxRef" validate:"required"`
 }
 
 type PropertyConsolidatedStatementResponse struct {
@@ -690,38 +690,38 @@ type PropertyConsolidatedStatementResponse struct {
 }
 
 type PropertyConsolidatedStatementData struct {
-	RefNo              string                    `json:"refNo"`
-	PropertyTaxRef     string                    `json:"propertyTaxRef"`
+	RefNo                 string                 `json:"refNo"`
+	PropertyTaxRef        string                 `json:"propertyTaxRef"`
 	ConsolidatedStatement *ConsolidatedStatement `json:"consolidatedStatement,omitempty"`
 }
 
 type ConsolidatedStatement struct {
-	StatementDate    string                `json:"statementDate"`
-	TotalAmount      string                `json:"totalAmount"`
-	PropertyDetails  []PropertyDetail      `json:"propertyDetails"`
-	PaymentHistory   []PaymentHistoryItem  `json:"paymentHistory"`
+	StatementDate   string               `json:"statementDate"`
+	TotalAmount     string               `json:"totalAmount"`
+	PropertyDetails []PropertyDetail     `json:"propertyDetails"`
+	PaymentHistory  []PaymentHistoryItem `json:"paymentHistory"`
 }
 
 type PropertyDetail struct {
-	PropertyID       string `json:"propertyId"`
-	Address          string `json:"address"`
-	PropertyType     string `json:"propertyType"`
-	TaxAmount        string `json:"taxAmount"`
-	DueDate          string `json:"dueDate"`
-	Status           string `json:"status"`
+	PropertyID   string `json:"propertyId"`
+	Address      string `json:"address"`
+	PropertyType string `json:"propertyType"`
+	TaxAmount    string `json:"taxAmount"`
+	DueDate      string `json:"dueDate"`
+	Status       string `json:"status"`
 }
 
 type PaymentHistoryItem struct {
-	PaymentDate      string `json:"paymentDate"`
-	Amount           string `json:"amount"`
-	PaymentMethod    string `json:"paymentMethod"`
-	TransactionRef   string `json:"transactionRef"`
+	PaymentDate    string `json:"paymentDate"`
+	Amount         string `json:"amount"`
+	PaymentMethod  string `json:"paymentMethod"`
+	TransactionRef string `json:"transactionRef"`
 }
 
 type PropertyConsolidatedStatementInfo struct {
-	Message       string                             `json:"message"`
-	MessageCode   int                                `json:"messageCode"`
-	FieldInfoList []PropertyConsolidatedFieldError   `json:"fieldInfoList,omitempty"`
+	Message       string                           `json:"message"`
+	MessageCode   int                              `json:"messageCode"`
+	FieldInfoList []PropertyConsolidatedFieldError `json:"fieldInfoList,omitempty"`
 }
 
 type PropertyConsolidatedFieldError struct {
@@ -732,10 +732,10 @@ type PropertyConsolidatedFieldError struct {
 // Property Consolidated Statement storage model for database
 type PropertyConsolidatedStatementRecord struct {
 	BaseModel
-	RefNo              string `json:"ref_no" gorm:"not null;index" validate:"required"`
-	PropertyTaxRef     string `json:"property_tax_ref" gorm:"not null;index" validate:"required"`
-	StatementDate      string `json:"statement_date"`
-	TotalAmount        string `json:"total_amount"`
-	ConsolidatedData   string `json:"consolidated_data" gorm:"type:text"` // JSON serialized data
-	Status             string `json:"status" gorm:"default:active"`
+	RefNo            string `json:"ref_no" gorm:"not null;index" validate:"required"`
+	PropertyTaxRef   string `json:"property_tax_ref" gorm:"not null;index" validate:"required"`
+	StatementDate    string `json:"statement_date"`
+	TotalAmount      string `json:"total_amount"`
+	ConsolidatedData string `json:"consolidated_data" gorm:"type:text"` // JSON serialized data
+	Status           string `json:"status" gorm:"default:active"`
 }
