@@ -802,10 +802,10 @@ type RentalSubmissionRequest struct {
 }
 
 type OrgAndSubmissionInfo struct {
-	AssmtYear              float64 `json:"assmtYear" validate:"required"`
-	AuthorisedPersonEmail  string  `json:"authorisedPersonEmail" validate:"required,email"`
-	AuthorisedPersonName   string  `json:"authorisedPersonName" validate:"required"`
-	DevelopmentName        string  `json:"developmentName" validate:"required"`
+	AssmtYear             float64 `json:"assmtYear" validate:"required"`
+	AuthorisedPersonEmail string  `json:"authorisedPersonEmail" validate:"required,email"`
+	AuthorisedPersonName  string  `json:"authorisedPersonName" validate:"required"`
+	DevelopmentName       string  `json:"developmentName" validate:"required"`
 }
 
 type PropertyDetailSubmission struct {
@@ -838,9 +838,9 @@ type RentalSubmissionData struct {
 }
 
 type RentalSubmissionInfo struct {
-	Message       string                      `json:"message"`
-	MessageCode   int                         `json:"messageCode"`
-	FieldInfoList *RentalSubmissionFieldInfo  `json:"fieldInfoList,omitempty"`
+	Message       string                     `json:"message"`
+	MessageCode   int                        `json:"messageCode"`
+	FieldInfoList *RentalSubmissionFieldInfo `json:"fieldInfoList,omitempty"`
 }
 
 type RentalSubmissionFieldInfo struct {
@@ -857,12 +857,12 @@ type RentalSubmissionFieldError struct {
 // Rental Submission storage model for database
 type RentalSubmissionRecord struct {
 	BaseModel
-	RefNo                     string  `json:"ref_no" gorm:"not null;index" validate:"required"`
-	AssmtYear                 float64 `json:"assmt_year" validate:"required"`
-	AuthorisedPersonEmail     string  `json:"authorised_person_email" validate:"required"`
-	AuthorisedPersonName      string  `json:"authorised_person_name" validate:"required"`
-	DevelopmentName           string  `json:"development_name" validate:"required"`
-	SubmissionData            string  `json:"submission_data" gorm:"type:text"` // JSON serialized property details
-	TotalProperties           int     `json:"total_properties"`
-	Status                    string  `json:"status" gorm:"default:submitted"`
+	RefNo                 string  `json:"ref_no" gorm:"not null;index" validate:"required"`
+	AssmtYear             float64 `json:"assmt_year" validate:"required"`
+	AuthorisedPersonEmail string  `json:"authorised_person_email" validate:"required"`
+	AuthorisedPersonName  string  `json:"authorised_person_name" validate:"required"`
+	DevelopmentName       string  `json:"development_name" validate:"required"`
+	SubmissionData        string  `json:"submission_data" gorm:"type:text"` // JSON serialized property details
+	TotalProperties       int     `json:"total_properties"`
+	Status                string  `json:"status" gorm:"default:submitted"`
 }
