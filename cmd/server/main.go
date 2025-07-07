@@ -55,6 +55,7 @@ func autoMigrate() error {
 	err := db.AutoMigrate(
 		&models.User{},
 		&models.GSTRegistration{},
+		&models.PropertyConsolidatedStatementRecord{},
 	)
 
 	if err != nil {

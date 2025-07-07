@@ -32,6 +32,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	gstService := services.NewGSTService(db)
 	authService := services.NewAuthService(db)
 	aisService := services.NewAISService()
+	propertyService := services.NewPropertyService(db)
 
 	// Initialize controllers
 	gstController := controllers.NewGSTController(gstService)
@@ -39,6 +40,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	corpPassController := controllers.NewCorpPassController()
 	eStampController := controllers.NewEStampController()
 	aisController := controllers.NewAISController(aisService)
+	propertyController := controllers.NewPropertyController(propertyService)
 
 	// IRAS GST API routes (following the swagger spec basePath)
 	irasGroup := router.Group("/iras/prod/GSTListing")
@@ -70,6 +72,12 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		aisGroup.POST("/AISOrgSearch", aisController.AISOrgSearch)
 	}
 
+	// IRAS Property Consolidated Statement routes
+	propertyGroup := router.Group("/iras/sb/PropertyConsolidatedStatement")
+	{
+		propertyGroup.POST("/retrieve", propertyController.RetrieveConsolidatedStatement)
+	}
+
 	// Authentication routes (public)
 	authGroup := router.Group("/auth")
 	{
@@ -93,6 +101,13 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		adminGroup.GET("/gst-registrations/:id", gstController.GetGSTRegistration)
 		adminGroup.PUT("/gst-registrations/:id", gstController.UpdateGSTRegistration)
 		adminGroup.DELETE("/gst-registrations/:id", gstController.DeleteGSTRegistration)
+
+		// Property Consolidated Statement management endpoints
+		adminGroup.POST("/property-statements", propertyController.CreateConsolidatedStatementRecord)
+		adminGroup.GET("/property-statements", propertyController.GetConsolidatedStatementRecords)
+		adminGroup.GET("/property-statements/:id", propertyController.GetConsolidatedStatementRecord)
+		adminGroup.PUT("/property-statements/:id", propertyController.UpdateConsolidatedStatementRecord)
+		adminGroup.DELETE("/property-statements/:id", propertyController.DeleteConsolidatedStatementRecord)
 
 		// User management endpoints (admin only)
 		adminGroup.GET("/users", authController.GetAllUsers)
@@ -126,12 +141,22 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 				"ais": gin.H{
 					"org_search": "/iras/sb/ESubmission/AISOrgSearch",
 				},
+				"property": gin.H{
+					"consolidated_statement": "/iras/sb/PropertyConsolidatedStatement/retrieve",
+				},
 				"admin": gin.H{
 					"create": "/admin/gst-registrations",
 					"list":   "/admin/gst-registrations",
 					"get":    "/admin/gst-registrations/{id}",
 					"update": "/admin/gst-registrations/{id}",
 					"delete": "/admin/gst-registrations/{id}",
+					"property_statements": gin.H{
+						"create": "/admin/property-statements",
+						"list":   "/admin/property-statements",
+						"get":    "/admin/property-statements/{id}",
+						"update": "/admin/property-statements/{id}",
+						"delete": "/admin/property-statements/{id}",
+					},
 				},
 			},
 		})
