@@ -184,3 +184,148 @@ func (s *PropertyService) UpdateConsolidatedStatementRecord(id uint, record *mod
 func (s *PropertyService) DeleteConsolidatedStatementRecord(id uint) error {
 	return s.db.Delete(&models.PropertyConsolidatedStatementRecord{}, id).Error
 }
+
+// Property Tax Balance Search methods
+
+// SearchPropertyTaxBalance searches property tax balance based on criteria
+func (s *PropertyService) SearchPropertyTaxBalance(req *models.PropertyTaxBalanceSearchRequest) (*models.PropertyTaxBalanceSearchResponse, error) {
+	// Validate client ID
+	if strings.TrimSpace(req.ClientID) == "" {
+		return &models.PropertyTaxBalanceSearchResponse{
+			ReturnCode: 40,
+			Info: &models.PropertyTaxBalanceSearchInfo{
+				Message:     "Invalid client ID",
+				MessageCode: 40001,
+				FieldInfoList: []models.PropertyTaxBalanceSearchFieldError{
+					{
+						Field:   "clientID",
+						Message: "Client ID is required",
+					},
+				},
+			},
+		}, nil
+	}
+
+	// Build query based on provided criteria
+	query := s.db.Where("client_id = ?", req.ClientID)
+
+	if req.PptyTaxRefNo != "" {
+		query = query.Where("property_tax_reference_no = ?", req.PptyTaxRefNo)
+	}
+	if req.PostalCode != "" {
+		query = query.Where("postal_code = ?", req.PostalCode)
+	}
+	if req.BlkHouseNo != "" {
+		query = query.Where("blk_house_no = ?", req.BlkHouseNo)
+	}
+	if req.StreetName != "" {
+		query = query.Where("street_name ILIKE ?", "%"+req.StreetName+"%")
+	}
+	if req.StoreyNo != "" {
+		query = query.Where("storey_no = ?", req.StoreyNo)
+	}
+	if req.UnitNo != "" {
+		query = query.Where("unit_no = ?", req.UnitNo)
+	}
+	if req.OwnerTaxRefID != "" {
+		query = query.Where("owner_tax_ref_id = ?", req.OwnerTaxRefID)
+	}
+
+	// Search for property tax balance in database
+	var propertyRecord models.PropertyTaxBalanceRecord
+	err := query.First(&propertyRecord).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// For demo purposes, return a mock response if not found in database
+			return s.generateMockPropertyTaxBalance(req), nil
+		}
+		// Return server error
+		return &models.PropertyTaxBalanceSearchResponse{
+			ReturnCode: 50,
+			Info: &models.PropertyTaxBalanceSearchInfo{
+				Message:     "Internal server error",
+				MessageCode: 50001,
+			},
+		}, err
+	}
+
+	// Return successful response
+	return &models.PropertyTaxBalanceSearchResponse{
+		ReturnCode: 0,
+		Data: &models.PropertyTaxBalanceSearchData{
+			DateOfSearch:           time.Now().Format("02-Jan-2006"),
+			PropertyDescription:    propertyRecord.PropertyDescription,
+			PropertyTaxReferenceNo: propertyRecord.PropertyTaxReferenceNo,
+			OutstandingBalance:     propertyRecord.OutstandingBalance,
+			PaymentByGiro:          propertyRecord.PaymentByGiro,
+		},
+	}, nil
+}
+
+// generateMockPropertyTaxBalance generates mock data for demo purposes
+func (s *PropertyService) generateMockPropertyTaxBalance(req *models.PropertyTaxBalanceSearchRequest) *models.PropertyTaxBalanceSearchResponse {
+	// Generate mock data based on the criteria provided
+	propertyRef := req.PptyTaxRefNo
+	if propertyRef == "" {
+		propertyRef = "3004250U"
+	}
+
+	propertyDesc := "Test Property"
+	if req.StreetName != "" {
+		propertyDesc = "Property at " + req.StreetName
+	}
+	if req.PostalCode != "" {
+		propertyDesc += " (" + req.PostalCode + ")"
+	}
+
+	return &models.PropertyTaxBalanceSearchResponse{
+		ReturnCode: 0,
+		Data: &models.PropertyTaxBalanceSearchData{
+			DateOfSearch:           time.Now().Format("02-Jan-2006"),
+			PropertyDescription:    propertyDesc,
+			PropertyTaxReferenceNo: propertyRef,
+			OutstandingBalance:     1800.00,
+			PaymentByGiro:          "Yes",
+		},
+	}
+}
+
+// Property Tax Balance Record CRUD methods
+
+// CreatePropertyTaxBalanceRecord creates a new property tax balance record
+func (s *PropertyService) CreatePropertyTaxBalanceRecord(record *models.PropertyTaxBalanceRecord) error {
+	return s.db.Create(record).Error
+}
+
+// GetPropertyTaxBalanceRecords retrieves all property tax balance records with pagination
+func (s *PropertyService) GetPropertyTaxBalanceRecords(offset, limit int) ([]models.PropertyTaxBalanceRecord, int64, error) {
+	var records []models.PropertyTaxBalanceRecord
+	var total int64
+
+	// Get total count
+	if err := s.db.Model(&models.PropertyTaxBalanceRecord{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Get records with pagination
+	err := s.db.Offset(offset).Limit(limit).Find(&records).Error
+	return records, total, err
+}
+
+// GetPropertyTaxBalanceRecordByID retrieves a property tax balance record by ID
+func (s *PropertyService) GetPropertyTaxBalanceRecordByID(id uint) (*models.PropertyTaxBalanceRecord, error) {
+	var record models.PropertyTaxBalanceRecord
+	err := s.db.First(&record, id).Error
+	return &record, err
+}
+
+// UpdatePropertyTaxBalanceRecord updates a property tax balance record
+func (s *PropertyService) UpdatePropertyTaxBalanceRecord(id uint, record *models.PropertyTaxBalanceRecord) error {
+	return s.db.Model(&models.PropertyTaxBalanceRecord{}).Where("id = ?", id).Updates(record).Error
+}
+
+// DeletePropertyTaxBalanceRecord soft deletes a property tax balance record
+func (s *PropertyService) DeletePropertyTaxBalanceRecord(id uint) error {
+	return s.db.Delete(&models.PropertyTaxBalanceRecord{}, id).Error
+}

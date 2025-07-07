@@ -131,6 +131,104 @@ func (ctrl *PropertyController) RetrieveConsolidatedStatement(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// Property Tax Balance Search endpoint
+
+// @Summary Search Property Tax Balance
+// @Description Search property tax balance based on various criteria
+// @Tags Property
+// @Accept json
+// @Produce json
+// @Param X-IBM-Client-Id header string true "Client ID"
+// @Param X-IBM-Client-Secret header string true "Client Secret"
+// @Param body body models.PropertyTaxBalanceSearchRequest true "Property Tax Balance Search Request"
+// @Success 200 {object} models.PropertyTaxBalanceSearchResponse
+// @Router /iras/sb/PTTaxBal/PtyTaxBalSearch [post]
+func (ctrl *PropertyController) SearchPropertyTaxBalance(c *gin.Context) {
+	// Validate headers
+	clientID := c.GetHeader("X-IBM-Client-Id")
+	clientSecret := c.GetHeader("X-IBM-Client-Secret")
+
+	// For development, accept demo credentials
+	if config.AppConfig.Env == "development" {
+		if clientID == "" {
+			clientID = config.AppConfig.IBMClientID
+		}
+		if clientSecret == "" {
+			clientSecret = config.AppConfig.IBMClientSecret
+		}
+	}
+
+	if clientID == "" || clientSecret == "" {
+		c.JSON(http.StatusUnauthorized, models.PropertyTaxBalanceSearchResponse{
+			ReturnCode: 40,
+			Info: &models.PropertyTaxBalanceSearchInfo{
+				Message:     "Missing required headers",
+				MessageCode: 40003,
+				FieldInfoList: []models.PropertyTaxBalanceSearchFieldError{
+					{
+						Field:   "headers",
+						Message: "X-IBM-Client-Id and X-IBM-Client-Secret are required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Parse request body
+	var req models.PropertyTaxBalanceSearchRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.PropertyTaxBalanceSearchResponse{
+			ReturnCode: 40,
+			Info: &models.PropertyTaxBalanceSearchInfo{
+				Message:     "Invalid request format",
+				MessageCode: 40004,
+				FieldInfoList: []models.PropertyTaxBalanceSearchFieldError{
+					{
+						Field:   "body",
+						Message: "Invalid JSON format",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Validate required clientID
+	if req.ClientID == "" {
+		c.JSON(http.StatusBadRequest, models.PropertyTaxBalanceSearchResponse{
+			ReturnCode: 40,
+			Info: &models.PropertyTaxBalanceSearchInfo{
+				Message:     "Missing client ID",
+				MessageCode: 40001,
+				FieldInfoList: []models.PropertyTaxBalanceSearchFieldError{
+					{
+						Field:   "clientID",
+						Message: "Client ID is required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Call service to search property tax balance
+	response, err := ctrl.propertyService.SearchPropertyTaxBalance(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.PropertyTaxBalanceSearchResponse{
+			ReturnCode: 50,
+			Info: &models.PropertyTaxBalanceSearchInfo{
+				Message:     "Internal server error",
+				MessageCode: 50001,
+			},
+		})
+		return
+	}
+
+	// Return response
+	c.JSON(http.StatusOK, response)
+}
+
 // Admin endpoints for managing property consolidated statement records
 
 // CreateConsolidatedStatementRecord creates a new property consolidated statement record
@@ -292,5 +390,169 @@ func (ctrl *PropertyController) DeleteConsolidatedStatementRecord(c *gin.Context
 	c.JSON(http.StatusOK, models.APIResponse{
 		Success: true,
 		Message: "Property consolidated statement record deleted successfully",
+	})
+}
+
+// Admin endpoints for managing property tax balance records
+
+// CreatePropertyTaxBalanceRecord creates a new property tax balance record
+func (ctrl *PropertyController) CreatePropertyTaxBalanceRecord(c *gin.Context) {
+	var record models.PropertyTaxBalanceRecord
+	if err := c.ShouldBindJSON(&record); err != nil {
+		c.JSON(http.StatusBadRequest, models.APIResponse{
+			Success: false,
+			Message: "Invalid request format",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	if err := ctrl.propertyService.CreatePropertyTaxBalanceRecord(&record); err != nil {
+		c.JSON(http.StatusInternalServerError, models.APIResponse{
+			Success: false,
+			Message: "Failed to create property tax balance record",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, models.APIResponse{
+		Success: true,
+		Message: "Property tax balance record created successfully",
+		Data:    record,
+	})
+}
+
+// GetPropertyTaxBalanceRecords retrieves all property tax balance records with pagination
+func (ctrl *PropertyController) GetPropertyTaxBalanceRecords(c *gin.Context) {
+	// Parse pagination parameters
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	offset := (page - 1) * limit
+
+	records, total, err := ctrl.propertyService.GetPropertyTaxBalanceRecords(offset, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.APIResponse{
+			Success: false,
+			Message: "Failed to fetch property tax balance records",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	totalPages := int((total + int64(limit) - 1) / int64(limit))
+
+	response := models.PaginationResponse{
+		Data:       records,
+		Total:      total,
+		Page:       page,
+		Limit:      limit,
+		TotalPages: totalPages,
+	}
+
+	c.JSON(http.StatusOK, models.APIResponse{
+		Success: true,
+		Message: "Property tax balance records retrieved successfully",
+		Data:    response,
+	})
+}
+
+// GetPropertyTaxBalanceRecord retrieves a specific property tax balance record by ID
+func (ctrl *PropertyController) GetPropertyTaxBalanceRecord(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.APIResponse{
+			Success: false,
+			Message: "Invalid ID format",
+		})
+		return
+	}
+
+	record, err := ctrl.propertyService.GetPropertyTaxBalanceRecordByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, models.APIResponse{
+			Success: false,
+			Message: "Property tax balance record not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.APIResponse{
+		Success: true,
+		Message: "Property tax balance record retrieved successfully",
+		Data:    record,
+	})
+}
+
+// UpdatePropertyTaxBalanceRecord updates a property tax balance record
+func (ctrl *PropertyController) UpdatePropertyTaxBalanceRecord(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.APIResponse{
+			Success: false,
+			Message: "Invalid ID format",
+		})
+		return
+	}
+
+	var record models.PropertyTaxBalanceRecord
+	if err := c.ShouldBindJSON(&record); err != nil {
+		c.JSON(http.StatusBadRequest, models.APIResponse{
+			Success: false,
+			Message: "Invalid request format",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	if err := ctrl.propertyService.UpdatePropertyTaxBalanceRecord(uint(id), &record); err != nil {
+		c.JSON(http.StatusInternalServerError, models.APIResponse{
+			Success: false,
+			Message: "Failed to update property tax balance record",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.APIResponse{
+		Success: true,
+		Message: "Property tax balance record updated successfully",
+	})
+}
+
+// DeletePropertyTaxBalanceRecord deletes a property tax balance record
+func (ctrl *PropertyController) DeletePropertyTaxBalanceRecord(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.APIResponse{
+			Success: false,
+			Message: "Invalid ID format",
+		})
+		return
+	}
+
+	if err := ctrl.propertyService.DeletePropertyTaxBalanceRecord(uint(id)); err != nil {
+		c.JSON(http.StatusInternalServerError, models.APIResponse{
+			Success: false,
+			Message: "Failed to delete property tax balance record",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.APIResponse{
+		Success: true,
+		Message: "Property tax balance record deleted successfully",
 	})
 }

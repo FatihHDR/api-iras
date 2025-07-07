@@ -56,6 +56,7 @@ func autoMigrate() error {
 		&models.User{},
 		&models.GSTRegistration{},
 		&models.PropertyConsolidatedStatementRecord{},
+		&models.PropertyTaxBalanceRecord{},
 	)
 
 	if err != nil {

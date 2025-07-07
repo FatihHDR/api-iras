@@ -78,6 +78,12 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		propertyGroup.POST("/retrieve", propertyController.RetrieveConsolidatedStatement)
 	}
 
+	// IRAS Property Tax Balance Search routes
+	propertyTaxBalGroup := router.Group("/iras/sb/PTTaxBal")
+	{
+		propertyTaxBalGroup.POST("/PtyTaxBalSearch", propertyController.SearchPropertyTaxBalance)
+	}
+
 	// Authentication routes (public)
 	authGroup := router.Group("/auth")
 	{
@@ -108,6 +114,13 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		adminGroup.GET("/property-statements/:id", propertyController.GetConsolidatedStatementRecord)
 		adminGroup.PUT("/property-statements/:id", propertyController.UpdateConsolidatedStatementRecord)
 		adminGroup.DELETE("/property-statements/:id", propertyController.DeleteConsolidatedStatementRecord)
+
+		// Property Tax Balance management endpoints
+		adminGroup.POST("/property-tax-balances", propertyController.CreatePropertyTaxBalanceRecord)
+		adminGroup.GET("/property-tax-balances", propertyController.GetPropertyTaxBalanceRecords)
+		adminGroup.GET("/property-tax-balances/:id", propertyController.GetPropertyTaxBalanceRecord)
+		adminGroup.PUT("/property-tax-balances/:id", propertyController.UpdatePropertyTaxBalanceRecord)
+		adminGroup.DELETE("/property-tax-balances/:id", propertyController.DeletePropertyTaxBalanceRecord)
 
 		// User management endpoints (admin only)
 		adminGroup.GET("/users", authController.GetAllUsers)
@@ -143,6 +156,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 				},
 				"property": gin.H{
 					"consolidated_statement": "/iras/sb/PropertyConsolidatedStatement/retrieve",
+					"tax_balance_search":     "/iras/sb/PTTaxBal/PtyTaxBalSearch",
 				},
 				"admin": gin.H{
 					"create": "/admin/gst-registrations",
@@ -156,6 +170,13 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 						"get":    "/admin/property-statements/{id}",
 						"update": "/admin/property-statements/{id}",
 						"delete": "/admin/property-statements/{id}",
+					},
+					"property_tax_balances": gin.H{
+						"create": "/admin/property-tax-balances",
+						"list":   "/admin/property-tax-balances",
+						"get":    "/admin/property-tax-balances/{id}",
+						"update": "/admin/property-tax-balances/{id}",
+						"delete": "/admin/property-tax-balances/{id}",
 					},
 				},
 			},

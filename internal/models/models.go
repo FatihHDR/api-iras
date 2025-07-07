@@ -739,3 +739,58 @@ type PropertyConsolidatedStatementRecord struct {
 	ConsolidatedData string `json:"consolidated_data" gorm:"type:text"` // JSON serialized data
 	Status           string `json:"status" gorm:"default:active"`
 }
+
+// Property Tax Balance Search models based on IRAS API spec
+type PropertyTaxBalanceSearchRequest struct {
+	ClientID      string `json:"clientID" validate:"required"`
+	Criteria      string `json:"criteria,omitempty"`
+	BlkHouseNo    string `json:"blkHouseNo,omitempty"`
+	StreetName    string `json:"streetName,omitempty"`
+	PostalCode    string `json:"postalCode,omitempty"`
+	StoreyNo      string `json:"storeyNo,omitempty"`
+	UnitNo        string `json:"unitNo,omitempty"`
+	OwnerTaxRefID string `json:"ownerTaxRefID,omitempty"`
+	PptyTaxRefNo  string `json:"pptyTaxRefNo,omitempty"`
+}
+
+type PropertyTaxBalanceSearchResponse struct {
+	ReturnCode int                           `json:"returnCode"`
+	Data       *PropertyTaxBalanceSearchData `json:"data,omitempty"`
+	Info       *PropertyTaxBalanceSearchInfo `json:"info,omitempty"`
+}
+
+type PropertyTaxBalanceSearchData struct {
+	DateOfSearch           string  `json:"dateOfSearch"`
+	PropertyDescription    string  `json:"propertyDescription"`
+	PropertyTaxReferenceNo string  `json:"propertyTaxReferenceNo"`
+	OutstandingBalance     float64 `json:"outstandingBalance"`
+	PaymentByGiro          string  `json:"paymentByGiro"`
+}
+
+type PropertyTaxBalanceSearchInfo struct {
+	Message       string                               `json:"message"`
+	MessageCode   int                                  `json:"messageCode"`
+	FieldInfoList []PropertyTaxBalanceSearchFieldError `json:"fieldInfoList,omitempty"`
+}
+
+type PropertyTaxBalanceSearchFieldError struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
+
+// Property Tax Balance Search storage model for database
+type PropertyTaxBalanceRecord struct {
+	BaseModel
+	ClientID               string  `json:"client_id" gorm:"not null;index" validate:"required"`
+	PropertyTaxReferenceNo string  `json:"property_tax_reference_no" gorm:"not null;index" validate:"required"`
+	PropertyDescription    string  `json:"property_description"`
+	OutstandingBalance     float64 `json:"outstanding_balance"`
+	PaymentByGiro          string  `json:"payment_by_giro"`
+	BlkHouseNo             string  `json:"blk_house_no"`
+	StreetName             string  `json:"street_name"`
+	PostalCode             string  `json:"postal_code"`
+	StoreyNo               string  `json:"storey_no"`
+	UnitNo                 string  `json:"unit_no"`
+	OwnerTaxRefID          string  `json:"owner_tax_ref_id"`
+	Status                 string  `json:"status" gorm:"default:active"`
+}
