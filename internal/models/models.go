@@ -794,3 +794,75 @@ type PropertyTaxBalanceRecord struct {
 	OwnerTaxRefID          string  `json:"owner_tax_ref_id"`
 	Status                 string  `json:"status" gorm:"default:active"`
 }
+
+// Rental Submission models based on IRAS API spec
+type RentalSubmissionRequest struct {
+	OrgAndSubmissionInfo OrgAndSubmissionInfo       `json:"orgAndSubmissionInfo" validate:"required"`
+	PropertyDtl          []PropertyDetailSubmission `json:"propertyDtl" validate:"required,min=1"`
+}
+
+type OrgAndSubmissionInfo struct {
+	AssmtYear              float64 `json:"assmtYear" validate:"required"`
+	AuthorisedPersonEmail  string  `json:"authorisedPersonEmail" validate:"required,email"`
+	AuthorisedPersonName   string  `json:"authorisedPersonName" validate:"required"`
+	DevelopmentName        string  `json:"developmentName" validate:"required"`
+}
+
+type PropertyDetailSubmission struct {
+	AdvPromotionAmt float64 `json:"advPromotionAmt"`
+	DateGTOEnd      float64 `json:"dateGTOEnd"`
+	DateGTOStart    float64 `json:"dateGTOStart"`
+	DateLeaseEnd    string  `json:"dateLeaseEnd"`
+	DateLeaseStart  string  `json:"dateLeaseStart"`
+	GTOAmt          float64 `json:"GTOAmt"`
+	GTOInfo         string  `json:"GTOInfo"`
+	InfoRemarks     string  `json:"infoRemarks"`
+	LetArea         string  `json:"letArea"`
+	NetRentAmt      float64 `json:"netRentAmt"`
+	PropertyTaxRef  string  `json:"propertyTaxRef" validate:"required"`
+	RecordID        float64 `json:"recordID"`
+	SvcChargeAmt    float64 `json:"svcChargeAmt"`
+	TenantName      string  `json:"tenantName"`
+	UnitNo          string  `json:"unitNo"`
+	VacantInd       string  `json:"vacantInd"`
+}
+
+type RentalSubmissionResponse struct {
+	ReturnCode int                   `json:"returnCode"`
+	Data       *RentalSubmissionData `json:"data,omitempty"`
+	Info       *RentalSubmissionInfo `json:"info,omitempty"`
+}
+
+type RentalSubmissionData struct {
+	RefNo string `json:"refNo"`
+}
+
+type RentalSubmissionInfo struct {
+	Message       string                      `json:"message"`
+	MessageCode   int                         `json:"messageCode"`
+	FieldInfoList *RentalSubmissionFieldInfo  `json:"fieldInfoList,omitempty"`
+}
+
+type RentalSubmissionFieldInfo struct {
+	FieldInfo []RentalSubmissionFieldError `json:"fieldInfo"`
+}
+
+type RentalSubmissionFieldError struct {
+	Field     string `json:"field"`
+	Message   string `json:"message"`
+	RecordID  string `json:"recordID"`
+	RecordIDs string `json:"recordIDs"`
+}
+
+// Rental Submission storage model for database
+type RentalSubmissionRecord struct {
+	BaseModel
+	RefNo                     string  `json:"ref_no" gorm:"not null;index" validate:"required"`
+	AssmtYear                 float64 `json:"assmt_year" validate:"required"`
+	AuthorisedPersonEmail     string  `json:"authorised_person_email" validate:"required"`
+	AuthorisedPersonName      string  `json:"authorised_person_name" validate:"required"`
+	DevelopmentName           string  `json:"development_name" validate:"required"`
+	SubmissionData            string  `json:"submission_data" gorm:"type:text"` // JSON serialized property details
+	TotalProperties           int     `json:"total_properties"`
+	Status                    string  `json:"status" gorm:"default:submitted"`
+}

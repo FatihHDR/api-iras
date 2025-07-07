@@ -33,6 +33,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	authService := services.NewAuthService(db)
 	aisService := services.NewAISService()
 	propertyService := services.NewPropertyService(db)
+	rentalService := services.NewRentalService(db)
 
 	// Initialize controllers
 	gstController := controllers.NewGSTController(gstService)
@@ -41,6 +42,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	eStampController := controllers.NewEStampController()
 	aisController := controllers.NewAISController(aisService)
 	propertyController := controllers.NewPropertyController(propertyService)
+	rentalController := controllers.NewRentalController(rentalService)
 
 	// IRAS GST API routes (following the swagger spec basePath)
 	irasGroup := router.Group("/iras/prod/GSTListing")
@@ -84,6 +86,12 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		propertyTaxBalGroup.POST("/PtyTaxBalSearch", propertyController.SearchPropertyTaxBalance)
 	}
 
+	// IRAS Rental Submission routes
+	rentalGroup := router.Group("/iras/sb/rental")
+	{
+		rentalGroup.POST("/Submission", rentalController.SubmitRental)
+	}
+
 	// Authentication routes (public)
 	authGroup := router.Group("/auth")
 	{
@@ -122,6 +130,14 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		adminGroup.PUT("/property-tax-balances/:id", propertyController.UpdatePropertyTaxBalanceRecord)
 		adminGroup.DELETE("/property-tax-balances/:id", propertyController.DeletePropertyTaxBalanceRecord)
 
+		// Rental Submission management endpoints
+		adminGroup.POST("/rental-submissions", rentalController.CreateRentalSubmissionRecord)
+		adminGroup.GET("/rental-submissions", rentalController.GetRentalSubmissionRecords)
+		adminGroup.GET("/rental-submissions/:id", rentalController.GetRentalSubmissionRecord)
+		adminGroup.GET("/rental-submissions/ref/:refNo", rentalController.GetRentalSubmissionRecordByRefNo)
+		adminGroup.PUT("/rental-submissions/:id", rentalController.UpdateRentalSubmissionRecord)
+		adminGroup.DELETE("/rental-submissions/:id", rentalController.DeleteRentalSubmissionRecord)
+
 		// User management endpoints (admin only)
 		adminGroup.GET("/users", authController.GetAllUsers)
 		adminGroup.PUT("/users/:id/deactivate", authController.DeactivateUser)
@@ -158,6 +174,9 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 					"consolidated_statement": "/iras/sb/PropertyConsolidatedStatement/retrieve",
 					"tax_balance_search":     "/iras/sb/PTTaxBal/PtyTaxBalSearch",
 				},
+				"rental": gin.H{
+					"submission": "/iras/sb/rental/Submission",
+				},
 				"admin": gin.H{
 					"create": "/admin/gst-registrations",
 					"list":   "/admin/gst-registrations",
@@ -177,6 +196,14 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 						"get":    "/admin/property-tax-balances/{id}",
 						"update": "/admin/property-tax-balances/{id}",
 						"delete": "/admin/property-tax-balances/{id}",
+					},
+					"rental_submissions": gin.H{
+						"create":    "/admin/rental-submissions",
+						"list":      "/admin/rental-submissions",
+						"get":       "/admin/rental-submissions/{id}",
+						"get_by_ref": "/admin/rental-submissions/ref/{refNo}",
+						"update":    "/admin/rental-submissions/{id}",
+						"delete":    "/admin/rental-submissions/{id}",
 					},
 				},
 			},
