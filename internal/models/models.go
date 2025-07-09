@@ -866,3 +866,45 @@ type RentalSubmissionRecord struct {
 	TotalProperties       int     `json:"total_properties"`
 	Status                string  `json:"status" gorm:"default:submitted"`
 }
+
+// CIT Conversion models based on IRAS API spec
+type CITConversionRequest struct {
+	ID int64 `json:"id" validate:"required"`
+}
+
+type CITConversionResponse struct {
+	ReturnCode int                `json:"returnCode"`
+	Data       *CITConversionData `json:"data,omitempty"`
+	Info       *CITConversionInfo `json:"info,omitempty"`
+}
+
+type CITConversionData struct {
+	ConversionID     string `json:"conversionId"`
+	Status           string `json:"status"`
+	ConversionDate   string `json:"conversionDate"`
+	ProcessedBy      string `json:"processedBy"`
+	ConversionResult string `json:"conversionResult"`
+}
+
+type CITConversionInfo struct {
+	Message       string                     `json:"message"`
+	MessageCode   int                        `json:"messageCode"`
+	FieldInfoList []CITConversionFieldError  `json:"fieldInfoList,omitempty"`
+}
+
+type CITConversionFieldError struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
+
+// CIT Conversion storage model for database
+type CITConversionRecord struct {
+	BaseModel
+	ConversionID     string `json:"conversion_id" gorm:"not null;uniqueIndex" validate:"required"`
+	RequestID        int64  `json:"request_id" gorm:"not null;index" validate:"required"`
+	Status           string `json:"status" gorm:"default:pending"`
+	ConversionDate   string `json:"conversion_date"`
+	ProcessedBy      string `json:"processed_by"`
+	ConversionResult string `json:"conversion_result" gorm:"type:text"`
+	ClientID         string `json:"client_id" gorm:"index"`
+}

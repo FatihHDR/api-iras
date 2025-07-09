@@ -34,6 +34,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	aisService := services.NewAISService()
 	propertyService := services.NewPropertyService(db)
 	rentalService := services.NewRentalService(db)
+	citService := services.NewCITService(db)
 
 	// Initialize controllers
 	gstController := controllers.NewGSTController(gstService)
@@ -43,6 +44,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	aisController := controllers.NewAISController(aisService)
 	propertyController := controllers.NewPropertyController(propertyService)
 	rentalController := controllers.NewRentalController(rentalService)
+	citController := controllers.NewCITController(citService)
 
 	// IRAS GST API routes (following the swagger spec basePath)
 	irasGroup := router.Group("/iras/prod/GSTListing")
@@ -92,6 +94,12 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		rentalGroup.POST("/Submission", rentalController.SubmitRental)
 	}
 
+	// IRAS CIT Conversion routes
+	citGroup := router.Group("/iras/prod/ct")
+	{
+		citGroup.POST("/convertformcs", citController.ConvertFormCS)
+	}
+
 	// Authentication routes (public)
 	authGroup := router.Group("/auth")
 	{
@@ -138,6 +146,15 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		adminGroup.PUT("/rental-submissions/:id", rentalController.UpdateRentalSubmissionRecord)
 		adminGroup.DELETE("/rental-submissions/:id", rentalController.DeleteRentalSubmissionRecord)
 
+		// CIT Conversion management endpoints
+		adminGroup.POST("/cit-conversions", citController.CreateCITConversionRecord)
+		adminGroup.GET("/cit-conversions", citController.GetCITConversionRecords)
+		adminGroup.GET("/cit-conversions/:id", citController.GetCITConversionRecord)
+		adminGroup.GET("/cit-conversions/conversion/:conversionId", citController.GetCITConversionRecordByConversionID)
+		adminGroup.GET("/cit-conversions/request/:requestId", citController.GetCITConversionRecordByRequestID)
+		adminGroup.PUT("/cit-conversions/:id", citController.UpdateCITConversionRecord)
+		adminGroup.DELETE("/cit-conversions/:id", citController.DeleteCITConversionRecord)
+
 		// User management endpoints (admin only)
 		adminGroup.GET("/users", authController.GetAllUsers)
 		adminGroup.PUT("/users/:id/deactivate", authController.DeactivateUser)
@@ -146,16 +163,17 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	// API info endpoint
 	router.GET("/api/info", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"title":       "Check GST Register",
-			"description": "The Check GST Register API enables you to check whether businesses are GST-registered based on their GST registration number, UEN or NRIC.",
+			"title":       "IRAS API Collection",
+			"description": "Complete collection of IRAS API endpoints including GST, Property, Rental, and CIT services",
 			"version":     "1.0.8",
-			"basePath":    "/iras/prod/GSTListing",
 			"schemes":     []string{"https"},
 			"host":        "apiservices.iras.gov.sg",
 			"consumes":    []string{"application/json"},
 			"produces":    []string{"application/json"},
 			"endpoints": gin.H{
-				"main": "/iras/prod/GSTListing/SearchGSTRegistered",
+				"gst": gin.H{
+					"search": "/iras/prod/GSTListing/SearchGSTRegistered",
+				},
 				"eStamp": gin.H{
 					"tenancy_agreement":     "/iras/sb/eStamp/StampTenancyAgreement",
 					"share_transfer":        "/iras/sb/eStamp/ShareTransfer",
@@ -177,12 +195,17 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 				"rental": gin.H{
 					"submission": "/iras/sb/rental/Submission",
 				},
+				"cit": gin.H{
+					"convert_form_cs": "/iras/prod/ct/convertformcs",
+				},
 				"admin": gin.H{
-					"create": "/admin/gst-registrations",
-					"list":   "/admin/gst-registrations",
-					"get":    "/admin/gst-registrations/{id}",
-					"update": "/admin/gst-registrations/{id}",
-					"delete": "/admin/gst-registrations/{id}",
+					"gst_registrations": gin.H{
+						"create": "/admin/gst-registrations",
+						"list":   "/admin/gst-registrations",
+						"get":    "/admin/gst-registrations/{id}",
+						"update": "/admin/gst-registrations/{id}",
+						"delete": "/admin/gst-registrations/{id}",
+					},
 					"property_statements": gin.H{
 						"create": "/admin/property-statements",
 						"list":   "/admin/property-statements",
@@ -204,6 +227,15 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 						"get_by_ref": "/admin/rental-submissions/ref/{refNo}",
 						"update":     "/admin/rental-submissions/{id}",
 						"delete":     "/admin/rental-submissions/{id}",
+					},
+					"cit_conversions": gin.H{
+						"create":               "/admin/cit-conversions",
+						"list":                 "/admin/cit-conversions",
+						"get":                  "/admin/cit-conversions/{id}",
+						"get_by_conversion_id": "/admin/cit-conversions/conversion/{conversionId}",
+						"get_by_request_id":    "/admin/cit-conversions/request/{requestId}",
+						"update":               "/admin/cit-conversions/{id}",
+						"delete":               "/admin/cit-conversions/{id}",
 					},
 				},
 			},
