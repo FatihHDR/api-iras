@@ -908,3 +908,79 @@ type CITConversionRecord struct {
 	ConversionResult string `json:"conversion_result" gorm:"type:text"`
 	ClientID         string `json:"client_id" gorm:"index"`
 }
+
+// SingPass Authentication models based on IRAS API spec
+type SingPassServiceAuthRequest struct {
+	Scope       string `json:"scope,omitempty" form:"scope"`
+	CallbackURL string `json:"callback_url,omitempty" form:"callback_url"`
+	State       string `json:"state,omitempty" form:"state"`
+}
+
+type SingPassServiceAuthResponse struct {
+	ReturnCode int                      `json:"returnCode"`
+	Data       *SingPassServiceAuthData `json:"data,omitempty"`
+	Info       *SingPassServiceAuthInfo `json:"info,omitempty"`
+}
+
+type SingPassServiceAuthData struct {
+	URL   string `json:"url"`
+	State string `json:"state"`
+}
+
+type SingPassServiceAuthInfo struct {
+	MessageCode   int                             `json:"messageCode"`
+	Message       string                          `json:"message"`
+	FieldInfoList []SingPassServiceAuthFieldError `json:"fieldInfoList,omitempty"`
+}
+
+type SingPassServiceAuthFieldError struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
+
+// SingPass Service Auth Token models
+type SingPassServiceAuthTokenRequest struct {
+	Code        string `json:"code" validate:"required"`
+	State       string `json:"state" validate:"required"`
+	CallbackURL string `json:"callback_url" validate:"required"`
+	Scope       string `json:"scope" validate:"required"`
+}
+
+type SingPassServiceAuthTokenResponse struct {
+	ReturnCode int                           `json:"returnCode"`
+	Data       *SingPassServiceAuthTokenData `json:"data,omitempty"`
+	Info       *SingPassServiceAuthInfo      `json:"info,omitempty"`
+}
+
+type SingPassServiceAuthTokenData struct {
+	AccessToken  string `json:"access_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	Scope        string `json:"scope"`
+}
+
+// SingPass Authentication storage models for database
+type SingPassAuthRecord struct {
+	BaseModel
+	AuthURL     string `json:"auth_url" gorm:"type:text"`
+	State       string `json:"state" gorm:"not null;index" validate:"required"`
+	Scope       string `json:"scope"`
+	CallbackURL string `json:"callback_url" gorm:"type:text"`
+	ClientID    string `json:"client_id" gorm:"index"`
+	Status      string `json:"status" gorm:"default:pending"`
+}
+
+type SingPassTokenRecord struct {
+	BaseModel
+	Code         string `json:"code" gorm:"not null;index" validate:"required"`
+	State        string `json:"state" gorm:"not null;index" validate:"required"`
+	AccessToken  string `json:"access_token" gorm:"type:text"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token" gorm:"type:text"`
+	Scope        string `json:"scope"`
+	CallbackURL  string `json:"callback_url" gorm:"type:text"`
+	ClientID     string `json:"client_id" gorm:"index"`
+	Status       string `json:"status" gorm:"default:active"`
+}

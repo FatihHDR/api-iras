@@ -59,6 +59,8 @@ func autoMigrate() error {
 		&models.PropertyTaxBalanceRecord{},
 		&models.RentalSubmissionRecord{},
 		&models.CITConversionRecord{},
+		&models.SingPassAuthRecord{},
+		&models.SingPassTokenRecord{},
 	)
 
 	if err != nil {

@@ -35,6 +35,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	propertyService := services.NewPropertyService(db)
 	rentalService := services.NewRentalService(db)
 	citService := services.NewCITService(db)
+	singpassService := services.NewSingPassService(db)
 
 	// Initialize controllers
 	gstController := controllers.NewGSTController(gstService)
@@ -45,6 +46,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	propertyController := controllers.NewPropertyController(propertyService)
 	rentalController := controllers.NewRentalController(rentalService)
 	citController := controllers.NewCITController(citService)
+	singpassController := controllers.NewSingPassController(singpassService)
 
 	// IRAS GST API routes (following the swagger spec basePath)
 	irasGroup := router.Group("/iras/prod/GSTListing")
@@ -98,6 +100,13 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	citGroup := router.Group("/iras/prod/ct")
 	{
 		citGroup.POST("/convertformcs", citController.ConvertFormCS)
+	}
+
+	// IRAS SingPass Authentication routes
+	singpassGroup := router.Group("/iras/prod/Authentication")
+	{
+		singpassGroup.POST("/SingPassServiceAuth", singpassController.SingPassServiceAuth)
+		singpassGroup.POST("/SingPassServiceAuthToken", singpassController.SingPassServiceAuthToken)
 	}
 
 	// Authentication routes (public)
@@ -197,6 +206,10 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 				},
 				"cit": gin.H{
 					"convert_form_cs": "/iras/prod/ct/convertformcs",
+				},
+				"singpass": gin.H{
+					"service_auth":       "/iras/prod/Authentication/SingPassServiceAuth",
+					"service_auth_token": "/iras/prod/Authentication/SingPassServiceAuthToken",
 				},
 				"admin": gin.H{
 					"gst_registrations": gin.H{
