@@ -900,3 +900,217 @@ func (ctrl *EStampController) SCAuthenticity(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+// @Summary Calculate Stamp Duty for Public Listed Company Shares Transfer
+// @Description Calculate stamp duty for transference of public listed company shares
+// @Tags Stamp Duty
+// @Accept json
+// @Produce json
+// @Param X-IBM-Client-Id header string false "Client ID"
+// @Param X-IBM-Client-Secret header string false "Client Secret"
+// @Param Accept header string false "Accept header" default(application/json)
+// @Param Content-Type header string false "Content-Type header" default(application/json)
+// @Param body body models.CalPubListedCompanySharesRequest true "Public Listed Company Shares Transfer Request"
+// @Success 200 {object} models.CalPubListedCompanySharesResponse
+// @Router /iras/prod/SD/CalPubListedCompanyShares [post]
+func (ctrl *EStampController) CalPubListedCompanyShares(c *gin.Context) {
+	// Validate headers (optional for development)
+	clientID := c.GetHeader("X-IBM-Client-Id")
+	clientSecret := c.GetHeader("X-IBM-Client-Secret")
+
+	// For development, accept demo credentials
+	if config.AppConfig.Env == "development" {
+		if clientID == "" {
+			clientID = config.AppConfig.IBMClientID
+		}
+		if clientSecret == "" {
+			clientSecret = config.AppConfig.IBMClientSecret
+		}
+	}
+
+	// Validate that we have authentication credentials (in production)
+	if config.AppConfig.Env != "development" && (clientID == "" || clientSecret == "") {
+		c.JSON(http.StatusBadRequest, models.CalPubListedCompanySharesResponse{
+			ReturnCode: 400,
+			Info: &models.CalPubListedCompanySharesInfo{
+				Message:     "Missing authentication headers",
+				MessageCode: 400,
+				FieldInfoList: []models.CalPubListedCompanySharesFieldInfo{
+					{
+						Field:   "X-IBM-Client-Id",
+						Message: "Client ID header is required",
+					},
+					{
+						Field:   "X-IBM-Client-Secret",
+						Message: "Client Secret header is required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Parse request body
+	var req models.CalPubListedCompanySharesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.CalPubListedCompanySharesResponse{
+			ReturnCode: 400,
+			Info: &models.CalPubListedCompanySharesInfo{
+				Message:     "Invalid request format",
+				MessageCode: 400,
+				FieldInfoList: []models.CalPubListedCompanySharesFieldInfo{
+					{
+						Field:   "body",
+						Message: fmt.Sprintf("JSON parsing error: %v", err),
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Validate required fields
+	if req.ClientID == "" {
+		c.JSON(http.StatusBadRequest, models.CalPubListedCompanySharesResponse{
+			ReturnCode: 400,
+			Info: &models.CalPubListedCompanySharesInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalPubListedCompanySharesFieldInfo{
+					{
+						Field:   "clientID",
+						Message: "Client ID is required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	if req.NumberOfSharesTransferred <= 0 {
+		c.JSON(http.StatusBadRequest, models.CalPubListedCompanySharesResponse{
+			ReturnCode: 400,
+			Info: &models.CalPubListedCompanySharesInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalPubListedCompanySharesFieldInfo{
+					{
+						Field:   "numberOfSharesTransferred",
+						Message: "Number of shares transferred must be greater than 0",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	if req.ValuePerShare <= 0 {
+		c.JSON(http.StatusBadRequest, models.CalPubListedCompanySharesResponse{
+			ReturnCode: 400,
+			Info: &models.CalPubListedCompanySharesInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalPubListedCompanySharesFieldInfo{
+					{
+						Field:   "valuePerShare",
+						Message: "Value per share must be greater than 0",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	if req.Consideration <= 0 {
+		c.JSON(http.StatusBadRequest, models.CalPubListedCompanySharesResponse{
+			ReturnCode: 400,
+			Info: &models.CalPubListedCompanySharesInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalPubListedCompanySharesFieldInfo{
+					{
+						Field:   "consideration",
+						Message: "Consideration must be greater than 0",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	if req.TransferenceDate == "" {
+		c.JSON(http.StatusBadRequest, models.CalPubListedCompanySharesResponse{
+			ReturnCode: 400,
+			Info: &models.CalPubListedCompanySharesInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalPubListedCompanySharesFieldInfo{
+					{
+						Field:   "transferenceDate",
+						Message: "Transference date is required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Validate date format (YYYY-MM-DD)
+	if _, err := time.Parse("2006-01-02", req.TransferenceDate); err != nil {
+		c.JSON(http.StatusBadRequest, models.CalPubListedCompanySharesResponse{
+			ReturnCode: 400,
+			Info: &models.CalPubListedCompanySharesInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalPubListedCompanySharesFieldInfo{
+					{
+						Field:   "transferenceDate",
+						Message: "Transference date must be in YYYY-MM-DD format",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Calculate stamp duty for public listed company shares
+	// Based on IRAS guidelines:
+	// - For shares in public listed companies: 0.2% of the consideration amount or market value, whichever is higher
+	// - Minimum stamp duty: S$1.00
+
+	dutiableAmount := req.Consideration
+	marketValue := req.NumberOfSharesTransferred * req.ValuePerShare
+
+	// Use the higher of consideration or market value
+	if marketValue > dutiableAmount {
+		dutiableAmount = marketValue
+	}
+
+	dutyRate := 0.002 // 0.2%
+	stampDuty := dutiableAmount * dutyRate
+
+	// Apply minimum stamp duty of S$1.00
+	if stampDuty < 1.0 {
+		stampDuty = 1.0
+	}
+
+	// Create response data
+	responseData := &models.CalPubListedCompanySharesData{
+		StampDuty:      stampDuty,
+		DutiableAmount: dutiableAmount,
+		DutyRate:       dutyRate,
+	}
+
+	// Return successful response
+	response := models.CalPubListedCompanySharesResponse{
+		ReturnCode: 200,
+		Data:       responseData,
+		Info: &models.CalPubListedCompanySharesInfo{
+			Message:       "Stamp duty calculation completed successfully",
+			MessageCode:   200,
+			FieldInfoList: []models.CalPubListedCompanySharesFieldInfo{},
+		},
+	}
+
+	c.JSON(http.StatusOK, response)
+}

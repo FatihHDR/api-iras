@@ -1053,3 +1053,35 @@ type SCAuthenticityFieldInfo struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
 }
+
+// Stamp Duty Calculation for Public Listed Company Shares models based on IRAS API spec
+type CalPubListedCompanySharesRequest struct {
+	ClientID                   string  `json:"clientID" validate:"required"`
+	NumberOfSharesTransferred  float64 `json:"numberOfSharesTransferred" validate:"required,gt=0"`
+	ValuePerShare              float64 `json:"valuePerShare" validate:"required,gt=0"`
+	Consideration              float64 `json:"consideration" validate:"required,gt=0"`
+	TransferenceDate           string  `json:"transferenceDate" validate:"required"`
+}
+
+type CalPubListedCompanySharesResponse struct {
+	ReturnCode int                               `json:"returnCode"`
+	Data       *CalPubListedCompanySharesData    `json:"data,omitempty"`
+	Info       *CalPubListedCompanySharesInfo    `json:"info,omitempty"`
+}
+
+type CalPubListedCompanySharesData struct {
+	StampDuty       float64 `json:"stampDuty"`
+	DutiableAmount  float64 `json:"dutiableAmount"`
+	DutyRate        float64 `json:"dutyRate"`
+}
+
+type CalPubListedCompanySharesInfo struct {
+	Message       string                                `json:"message"`
+	MessageCode   int                                   `json:"messageCode"`
+	FieldInfoList []CalPubListedCompanySharesFieldInfo  `json:"fieldInfoList,omitempty"`
+}
+
+type CalPubListedCompanySharesFieldInfo struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
