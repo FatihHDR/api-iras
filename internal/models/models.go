@@ -887,9 +887,9 @@ type CITConversionData struct {
 }
 
 type CITConversionInfo struct {
-	Message       string                     `json:"message"`
-	MessageCode   int                        `json:"messageCode"`
-	FieldInfoList []CITConversionFieldError  `json:"fieldInfoList,omitempty"`
+	Message       string                    `json:"message"`
+	MessageCode   int                       `json:"messageCode"`
+	FieldInfoList []CITConversionFieldError `json:"fieldInfoList,omitempty"`
 }
 
 type CITConversionFieldError struct {
@@ -956,7 +956,7 @@ type SingPassServiceAuthTokenData struct {
 	AccessToken  string `json:"access_token"`
 	TokenType    string `json:"token_type"`
 	ExpiresIn    int    `json:"expires_in"`
-	RefreshToken string `json:"refresh_token,omitempty"`
+	RefreshToken string `json:"refresh_token" gorm:"type:text"`
 	Scope        string `json:"scope"`
 }
 
@@ -983,4 +983,73 @@ type SingPassTokenRecord struct {
 	CallbackURL  string `json:"callback_url" gorm:"type:text"`
 	ClientID     string `json:"client_id" gorm:"index"`
 	Status       string `json:"status" gorm:"default:active"`
+}
+
+// Stamp Certificate Authenticity Check models based on IRAS API spec
+type SCAuthenticityRequest struct {
+	DocRefNo     int64  `json:"docRefNo" validate:"required"`
+	StampCertRef string `json:"stampCertRef" validate:"required"`
+}
+
+type SCAuthenticityResponse struct {
+	ReturnCode int                 `json:"returnCode"`
+	Data       *SCAuthenticityData `json:"data,omitempty"`
+	Info       *SCAuthenticityInfo `json:"info,omitempty"`
+}
+
+type SCAuthenticityData struct {
+	AddBuyerSD         float64                 `json:"addBuyerSD"`
+	AdjudicationFee    float64                 `json:"adjudicationFee"`
+	AppRefNo           string                  `json:"appRefNo"`
+	AssmtType          string                  `json:"assmtType"`
+	BuyerSD            float64                 `json:"buyerSD"`
+	CertType           string                  `json:"certType"`
+	DateOfDoc          string                  `json:"dateOfDoc"`
+	DocDescription     string                  `json:"docDescription"`
+	DocRefNo           float64                 `json:"docRefNo"`
+	DocVerNo           float64                 `json:"docVerNo"`
+	Duplicate          float64                 `json:"duplicate"`
+	Fines              float64                 `json:"fines"`
+	Penalty            float64                 `json:"penalty"`
+	SDAmount           float64                 `json:"sdAmount"`
+	Securities         []string                `json:"securities"`
+	StampCertIssueDate string                  `json:"stampCertIssueDate"`
+	StampCertRef       string                  `json:"stampCertRef"`
+	TotalAmtPayable    float64                 `json:"totalAmtPayable"`
+	ValuationFee       float64                 `json:"valuationFee"`
+	PropertyList       []SCAuthPropertyData    `json:"propertyList"`
+	StockSharesList    []SCAuthStockSharesData `json:"stockSharesList"`
+	VacantLandList     []SCAuthVacantLandData  `json:"vacantLandList"`
+}
+
+type SCAuthPropertyData struct {
+	BlkHseNo   string `json:"blkHseNo"`
+	PostalCode string `json:"postalCode"`
+	Street     string `json:"street"`
+	UnitLevel  string `json:"unitLevel"`
+}
+
+type SCAuthStockSharesData struct {
+	EntityID       string  `json:"entityID"`
+	EntityType     string  `json:"entityType"`
+	NameOfCompany  string  `json:"nameOfCompany"`
+	NoStocksShares float64 `json:"noStocksShares"`
+}
+
+type SCAuthVacantLandData struct {
+	LotNo        string  `json:"lotNo"`
+	MkTSNo       string  `json:"mkTSNo"`
+	PlPTParcelNo float64 `json:"plPTParcelNo"`
+	StreetName   string  `json:"streetName"`
+}
+
+type SCAuthenticityInfo struct {
+	Message       string                    `json:"message"`
+	MessageCode   int                       `json:"messageCode"`
+	FieldInfoList []SCAuthenticityFieldInfo `json:"fieldInfoList,omitempty"`
+}
+
+type SCAuthenticityFieldInfo struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
 }

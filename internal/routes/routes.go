@@ -72,6 +72,12 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		eStampGroup.POST("/SalePurchaseSellers", eStampController.SalePurchaseSellers)
 	}
 
+	// IRAS Stamp Duty routes (Production)
+	stampDutyGroup := router.Group("/iras/prod/SD")
+	{
+		stampDutyGroup.POST("/SCAuthenticity", eStampController.SCAuthenticity)
+	}
+
 	// IRAS AIS routes
 	aisGroup := router.Group("/iras/sb/ESubmission")
 	{
@@ -189,6 +195,9 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 					"stamp_mortgage":        "/iras/sb/eStamp/StampMortgage",
 					"sale_purchase_buyers":  "/iras/sb/eStamp/SalePurchaseBuyers",
 					"sale_purchase_sellers": "/iras/sb/eStamp/SalePurchaseSellers",
+				},
+				"stamp_duty": gin.H{
+					"authenticity_check": "/iras/prod/SD/SCAuthenticity",
 				},
 				"corppass": gin.H{
 					"auth":  "/iras/sb/Authentication/CorpPassAuth",

@@ -736,3 +736,167 @@ func (ctrl *EStampController) generateMockPDF(docType, docRefNo string) string {
 		docType, docRefNo, time.Now().Format("2006-01-02 15:04:05"))
 	return base64.StdEncoding.EncodeToString([]byte(mockPDFContent))
 }
+
+// @Summary Stamp Certificate Authenticity Check
+// @Description Check the authenticity of a stamp certificate
+// @Tags Stamp
+// @Accept json
+// @Produce json
+// @Param X-IBM-Client-Id header string true "Client ID"
+// @Param X-IBM-Client-Secret header string true "Client Secret"
+// @Param body body models.SCAuthenticityRequest true "Stamp Certificate Authenticity Request"
+// @Success 200 {object} models.SCAuthenticityResponse
+// @Router /iras/prod/SD/SCAuthenticity [post]
+func (ctrl *EStampController) SCAuthenticity(c *gin.Context) {
+	// Validate headers
+	clientID := c.GetHeader("X-IBM-Client-Id")
+	clientSecret := c.GetHeader("X-IBM-Client-Secret")
+
+	// For development, accept demo credentials
+	if config.AppConfig.Env == "development" {
+		if clientID == "" {
+			clientID = config.AppConfig.IBMClientID
+		}
+		if clientSecret == "" {
+			clientSecret = config.AppConfig.IBMClientSecret
+		}
+	}
+
+	if clientID == "" || clientSecret == "" {
+		c.JSON(http.StatusBadRequest, models.SCAuthenticityResponse{
+			ReturnCode: 400,
+			Info: &models.SCAuthenticityInfo{
+				Message:     "Missing required headers",
+				MessageCode: 400,
+				FieldInfoList: []models.SCAuthenticityFieldInfo{
+					{Field: "X-IBM-Client-Id", Message: "Client ID is required"},
+					{Field: "X-IBM-Client-Secret", Message: "Client Secret is required"},
+				},
+			},
+		})
+		return
+	}
+
+	// Parse request body
+	var req models.SCAuthenticityRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.SCAuthenticityResponse{
+			ReturnCode: 400,
+			Info: &models.SCAuthenticityInfo{
+				Message:     "Invalid request body",
+				MessageCode: 400,
+				FieldInfoList: []models.SCAuthenticityFieldInfo{
+					{Field: "request", Message: err.Error()},
+				},
+			},
+		})
+		return
+	}
+
+	// Validate required fields
+	if req.DocRefNo == 0 {
+		c.JSON(http.StatusBadRequest, models.SCAuthenticityResponse{
+			ReturnCode: 400,
+			Info: &models.SCAuthenticityInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.SCAuthenticityFieldInfo{
+					{Field: "docRefNo", Message: "Document reference number is required"},
+				},
+			},
+		})
+		return
+	}
+
+	if req.StampCertRef == "" {
+		c.JSON(http.StatusBadRequest, models.SCAuthenticityResponse{
+			ReturnCode: 400,
+			Info: &models.SCAuthenticityInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.SCAuthenticityFieldInfo{
+					{Field: "stampCertRef", Message: "Stamp certificate reference is required"},
+				},
+			},
+		})
+		return
+	}
+
+	// Generate mock response data based on the API specification
+	mockData := &models.SCAuthenticityData{
+		AddBuyerSD:         54.30191592,
+		AdjudicationFee:    54.64431772,
+		AppRefNo:           "kobejcedfa",
+		AssmtType:          "nihulejac",
+		BuyerSD:            61.67180885,
+		CertType:           "mofalpihimhunipk",
+		DateOfDoc:          "2/10/2109",
+		DocDescription:     "Tenancy Agreement for residential property",
+		DocRefNo:           float64(req.DocRefNo),
+		DocVerNo:           37.22779704,
+		Duplicate:          15.08565901,
+		Fines:              84.80979919,
+		Penalty:            44.79689412,
+		SDAmount:           47.94581197,
+		Securities:         []string{"onre", "holapu", "vegha"},
+		StampCertIssueDate: time.Now().AddDate(0, -1, 0).Format("2/1/2006"),
+		StampCertRef:       req.StampCertRef,
+		TotalAmtPayable:    90.0944656,
+		ValuationFee:       84.73702907,
+		PropertyList: []models.SCAuthPropertyData{
+			{
+				BlkHseNo:   "123A",
+				PostalCode: "S123456",
+				Street:     "Orchard Road",
+				UnitLevel:  "#12-34",
+			},
+			{
+				BlkHseNo:   "456B",
+				PostalCode: "S654321",
+				Street:     "Marina Bay Drive",
+				UnitLevel:  "#05-67",
+			},
+		},
+		StockSharesList: []models.SCAuthStockSharesData{
+			{
+				EntityID:       "698679549755392",
+				EntityType:     "Private Limited Company",
+				NameOfCompany:  "ABC Holdings Pte Ltd",
+				NoStocksShares: 13.94657641,
+			},
+			{
+				EntityID:       "5811371709038592",
+				EntityType:     "Public Limited Company",
+				NameOfCompany:  "XYZ Corporation Ltd",
+				NoStocksShares: 19.96927301,
+			},
+		},
+		VacantLandList: []models.SCAuthVacantLandData{
+			{
+				LotNo:        "Lot 123",
+				MkTSNo:       "MK789",
+				PlPTParcelNo: 23.16430078,
+				StreetName:   "Sentosa Cove",
+			},
+			{
+				LotNo:        "Lot 456",
+				MkTSNo:       "MK012",
+				PlPTParcelNo: 25.35278033,
+				StreetName:   "Jurong Island",
+			},
+		},
+	}
+
+	// Return successful response
+	response := models.SCAuthenticityResponse{
+		ReturnCode: 200,
+		Data:       mockData,
+		Info: &models.SCAuthenticityInfo{
+			Message:       "Stamp certificate authenticity check completed successfully",
+			MessageCode:   200,
+			FieldInfoList: []models.SCAuthenticityFieldInfo{},
+		},
+	}
+
+	c.JSON(http.StatusOK, response)
+}
