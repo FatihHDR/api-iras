@@ -1114,3 +1114,240 @@ func (ctrl *EStampController) CalPubListedCompanyShares(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+// @Summary Calculate Seller Stamp Duty for Industrial Property
+// @Description Calculate seller stamp duty for disposal of industrial property
+// @Tags Stamp Duty
+// @Accept json
+// @Produce json
+// @Param X-IBM-Client-Id header string false "Client ID"
+// @Param X-IBM-Client-Secret header string false "Client Secret"
+// @Param Accept header string false "Accept header" default(application/json)
+// @Param Content-Type header string false "Content-Type header" default(application/json)
+// @Param body body models.CalIndustrialSSDRequest true "Industrial Property Seller Stamp Duty Request"
+// @Success 200 {object} models.CalIndustrialSSDResponse
+// @Router /iras/prod/SD/CalIndustrialSSD [post]
+func (ctrl *EStampController) CalIndustrialSSD(c *gin.Context) {
+	// Validate headers (optional for development)
+	clientID := c.GetHeader("X-IBM-Client-Id")
+	clientSecret := c.GetHeader("X-IBM-Client-Secret")
+
+	// For development, accept demo credentials
+	if config.AppConfig.Env == "development" {
+		if clientID == "" {
+			clientID = config.AppConfig.IBMClientID
+		}
+		if clientSecret == "" {
+			clientSecret = config.AppConfig.IBMClientSecret
+		}
+	}
+
+	// Validate that we have authentication credentials (in production)
+	if config.AppConfig.Env != "development" && (clientID == "" || clientSecret == "") {
+		c.JSON(http.StatusBadRequest, models.CalIndustrialSSDResponse{
+			ReturnCode: 400,
+			Info: &models.CalIndustrialSSDInfo{
+				Message:     "Missing authentication headers",
+				MessageCode: 400,
+				FieldInfoList: []models.CalIndustrialSSDFieldInfo{
+					{
+						Field:   "X-IBM-Client-Id",
+						Message: "Client ID header is required",
+					},
+					{
+						Field:   "X-IBM-Client-Secret",
+						Message: "Client Secret header is required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Parse request body
+	var req models.CalIndustrialSSDRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.CalIndustrialSSDResponse{
+			ReturnCode: 400,
+			Info: &models.CalIndustrialSSDInfo{
+				Message:     "Invalid request format",
+				MessageCode: 400,
+				FieldInfoList: []models.CalIndustrialSSDFieldInfo{
+					{
+						Field:   "body",
+						Message: fmt.Sprintf("JSON parsing error: %v", err),
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Validate required fields
+	if req.ClientID == "" {
+		c.JSON(http.StatusBadRequest, models.CalIndustrialSSDResponse{
+			ReturnCode: 400,
+			Info: &models.CalIndustrialSSDInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalIndustrialSSDFieldInfo{
+					{
+						Field:   "clientID",
+						Message: "Client ID is required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	if req.Value <= 0 {
+		c.JSON(http.StatusBadRequest, models.CalIndustrialSSDResponse{
+			ReturnCode: 400,
+			Info: &models.CalIndustrialSSDInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalIndustrialSSDFieldInfo{
+					{
+						Field:   "value",
+						Message: "Property value must be greater than 0",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	if req.AcquisitionDate == "" {
+		c.JSON(http.StatusBadRequest, models.CalIndustrialSSDResponse{
+			ReturnCode: 400,
+			Info: &models.CalIndustrialSSDInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalIndustrialSSDFieldInfo{
+					{
+						Field:   "acquisitionDate",
+						Message: "Acquisition date is required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	if req.DisposalDate == "" {
+		c.JSON(http.StatusBadRequest, models.CalIndustrialSSDResponse{
+			ReturnCode: 400,
+			Info: &models.CalIndustrialSSDInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalIndustrialSSDFieldInfo{
+					{
+						Field:   "disposalDate",
+						Message: "Disposal date is required",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Validate date formats (YYYY-MM-DD)
+	acquisitionDate, err := time.Parse("2006-01-02", req.AcquisitionDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.CalIndustrialSSDResponse{
+			ReturnCode: 400,
+			Info: &models.CalIndustrialSSDInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalIndustrialSSDFieldInfo{
+					{
+						Field:   "acquisitionDate",
+						Message: "Acquisition date must be in YYYY-MM-DD format",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	disposalDate, err := time.Parse("2006-01-02", req.DisposalDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.CalIndustrialSSDResponse{
+			ReturnCode: 400,
+			Info: &models.CalIndustrialSSDInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalIndustrialSSDFieldInfo{
+					{
+						Field:   "disposalDate",
+						Message: "Disposal date must be in YYYY-MM-DD format",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Validate that disposal date is after acquisition date
+	if disposalDate.Before(acquisitionDate) {
+		c.JSON(http.StatusBadRequest, models.CalIndustrialSSDResponse{
+			ReturnCode: 400,
+			Info: &models.CalIndustrialSSDInfo{
+				Message:     "Validation failed",
+				MessageCode: 400,
+				FieldInfoList: []models.CalIndustrialSSDFieldInfo{
+					{
+						Field:   "disposalDate",
+						Message: "Disposal date must be after acquisition date",
+					},
+				},
+			},
+		})
+		return
+	}
+
+	// Calculate holding period in years
+	holdingPeriodDays := int(disposalDate.Sub(acquisitionDate).Hours() / 24)
+	holdingPeriodYears := holdingPeriodDays / 365 // Simplified calculation
+
+	// Calculate seller stamp duty for industrial property
+	// Based on IRAS guidelines for industrial property seller stamp duty:
+	// - Holding period determines the rate
+	// - Industrial properties have specific rates based on holding period
+
+	var dutyRate float64
+
+	// Seller stamp duty rates based on holding period for industrial property
+	if holdingPeriodYears < 1 {
+		dutyRate = 0.15 // 15% for properties held less than 1 year
+	} else if holdingPeriodYears < 2 {
+		dutyRate = 0.10 // 10% for properties held 1-2 years
+	} else if holdingPeriodYears < 3 {
+		dutyRate = 0.05 // 5% for properties held 2-3 years
+	} else {
+		dutyRate = 0.0 // No SSD for properties held 3+ years
+	}
+
+	stampDuty := req.Value * dutyRate
+
+	// Create response data
+	responseData := &models.CalIndustrialSSDData{
+		StampDuty:     stampDuty,
+		HoldingPeriod: holdingPeriodYears,
+		DutyRate:      dutyRate,
+	}
+
+	// Return successful response
+	response := models.CalIndustrialSSDResponse{
+		ReturnCode: 200,
+		Data:       responseData,
+		Info: &models.CalIndustrialSSDInfo{
+			Message:       "Industrial property seller stamp duty calculation completed successfully",
+			MessageCode:   200,
+			FieldInfoList: []models.CalIndustrialSSDFieldInfo{},
+		},
+	}
+
+	c.JSON(http.StatusOK, response)
+}

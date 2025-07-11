@@ -264,7 +264,7 @@ type PropertyData struct {
 type LandData struct {
 	Sequence                              int                 `json:"sequence"`
 	LandIDType                            int                 `json:"landIdType"`
-	MKOrTSNo                              string              `json:"mkOrTSNo"`
+	 MKOrTSNo                              string              `json:"mkOrTSNo"`
 	StreetName                            string              `json:"streetName"`
 	FTLotNo                               string              `json:"ftLotNo,omitempty"`
 	FTPlOrPtParcelNo                      string              `json:"ftPlOrPtParcelNo,omitempty"`
@@ -1082,6 +1082,37 @@ type CalPubListedCompanySharesInfo struct {
 }
 
 type CalPubListedCompanySharesFieldInfo struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
+
+// Seller Stamp Duty Calculation for Industrial Property models based on IRAS API spec
+type CalIndustrialSSDRequest struct {
+	Value           float64 `json:"value" validate:"required,gt=0"`
+	AcquisitionDate string  `json:"acquisitionDate" validate:"required"`
+	DisposalDate    string  `json:"disposalDate" validate:"required"`
+	ClientID        string  `json:"clientID" validate:"required"`
+}
+
+type CalIndustrialSSDResponse struct {
+	ReturnCode int                      `json:"returnCode"`
+	Data       *CalIndustrialSSDData    `json:"data,omitempty"`
+	Info       *CalIndustrialSSDInfo    `json:"info,omitempty"`
+}
+
+type CalIndustrialSSDData struct {
+	StampDuty     float64 `json:"stampDuty"`
+	HoldingPeriod int     `json:"holdingPeriod"`
+	DutyRate      float64 `json:"dutyRate"`
+}
+
+type CalIndustrialSSDInfo struct {
+	Message       string                           `json:"message"`
+	MessageCode   int                              `json:"messageCode"`
+	FieldInfoList []CalIndustrialSSDFieldInfo      `json:"fieldInfoList,omitempty"`
+}
+
+type CalIndustrialSSDFieldInfo struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
 }

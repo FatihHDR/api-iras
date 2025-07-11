@@ -77,6 +77,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	{
 		stampDutyGroup.POST("/SCAuthenticity", eStampController.SCAuthenticity)
 		stampDutyGroup.POST("/CalPubListedCompanyShares", eStampController.CalPubListedCompanyShares)
+		stampDutyGroup.POST("/CalIndustrialSSD", eStampController.CalIndustrialSSD)
 	}
 
 	// IRAS AIS routes
@@ -198,8 +199,9 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 					"sale_purchase_sellers": "/iras/sb/eStamp/SalePurchaseSellers",
 				},
 				"stamp_duty": gin.H{
-					"authenticity_check":           "/iras/prod/SD/SCAuthenticity",
-					"calc_pub_listed_company_shares": "/iras/prod/SD/CalPubListedCompanyShares",
+					"authenticity_check":              "/iras/prod/SD/SCAuthenticity",
+					"calc_pub_listed_company_shares":  "/iras/prod/SD/CalPubListedCompanyShares",
+					"calc_industrial_ssd":             "/iras/prod/SD/CalIndustrialSSD",
 				},
 				"corppass": gin.H{
 					"auth":  "/iras/sb/Authentication/CorpPassAuth",
